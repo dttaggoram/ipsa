@@ -8,24 +8,34 @@ body {
     /*background: #f3f3f3;*/
     font: normal 10px "Helvetica Neue", Helvetica, sans-serif; 
     /*margin: 2em;*/ 
-}            
+}     
+
+table {
+	border: 1px;
+	border-style: dashed;
+	border-color: #000000;
+}       
 
 #map {
     margin-right: auto;
 }
 
-.constituency {
-    fill: #e5e5e5;
-    /* no stroke */ 
+#details {
+	padding: 20px;
+    border: 2px solid;
+    border-radius: 25px;
+    background-color: white;
+  	position: absolute;
+  	left: 90%;
+  	top: 20%;
+  	transform: translate(-80%, -10%); /* Yep! */
+  	opacity: 0;
 }
 
-.constituency-borders{
-    fill: none;
-    stroke: #fff;
-    stroke-width: 0.25px;
-    stroke-linejoin: round;
-    stroke-linecap: round;
-    pointer-events: none;
+.constituency {
+    fill: #e5e5e5;
+    /*stroke: #fff;
+    stroke-width: 0.25px;*/
 }
 
 .background {
@@ -75,9 +85,10 @@ div.tooltip {
     </head>
     <body>
         <div id='map'></div>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
-        <script src="http://d3js.org/queue.v1.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.19/topojson.min.js"></script>
+        <script src="d3.min.js"></script>
+        <script src="queue.v1.min.js"></script>
+        <script src="topojson.v1.min.js"></script>
+        <script src="jquery.min.js"></script>
         <script>
 
 // create map
@@ -125,13 +136,16 @@ queue()
     .defer(d3.json, "data/constituencies-wni.topo.json")
     .defer(d3.tsv, "data/vw_uk_voting_winners_extract.tsv")
     .defer(d3.csv, "data/export-2014.csv")
+    .defer(d3.csv, "data/export-2013.csv")
     .await(ready) // ready refers to function below
 ;
 
-function ready(error, topology, electionData,ipsaData14) {
+function ready(error, topology, electionData,ipsaData14,ipsaData13) {
     // console.log(topology);
     // console.log(electionData);
     // console.log(ipsaData14);
+
+
 
     var constituencies = topojson.feature(topology, topology.objects.constituencies).features;
     var n = constituencies.length;
@@ -152,7 +166,16 @@ function ready(error, topology, electionData,ipsaData14) {
         d.partyName = featureData[0].party_name;
         d.shareVotes = featureData[0].share_votes;
 
-        featureData = ipsaData14.filter(
+        featureData14 = ipsaData14.filter(
+        function(n){ 
+            if (n.constituency.substring(n.constituency.length-1,n.constituency.length) == 'C') {
+                n.constituency = n.constituency.substring(0,n.constituency.length-3)
+            }
+            return d.properties.PCON13NM == n.constituency;
+        })
+        ;
+
+        featureData13 = ipsaData13.filter(
         function(n){ 
             if (n.constituency.substring(n.constituency.length-1,n.constituency.length) == 'C') {
                 n.constituency = n.constituency.substring(0,n.constituency.length-3)
@@ -161,7 +184,10 @@ function ready(error, topology, electionData,ipsaData14) {
         })
         ;
         
-        d.mp = featureData[0].mp_name;
+        d.mp = featureData14[0].mp_name;
+        d.costs14 = featureData14[0];
+        d.costs13 = featureData13[0];
+
         
     })
     ;
@@ -175,7 +201,6 @@ function ready(error, topology, electionData,ipsaData14) {
         .insert('path')
         // assign id from feature data
         .attr('id', function(d) { return d.id; })
-        //.attr('class', 'constituency')
         .attr('d', path)
         .attr('class', function(d){
             return (d.partyName).toLocaleLowerCase().replace(' ','-')
@@ -235,11 +260,47 @@ function clicked(d) {
         y = centroid[1];
         k = 6;
         centered = d;
+        $("#details").show();
+        $("#details").css("opacity","1");
+        $("#mpname").html(d.mp);
+        $("#constituency").html(d.constituencyName);
+        $("#party").html(d.partyName + " / Votes: " + d.shareVotes + "%");
+
+        console.log(d.costs13.staff_spend_against_budget);
+
+
+        officebudget = parseInt((parseFloat(d.costs14.office_costs_spend_against_budget.replace(',',''))/parseFloat(d.costs14.office_costs_maximum_budget_available.replace(',','')))*100);
+        officechange = parseInt(parseFloat(d.costs14.office_costs_spend_against_budget.replace(',',''))/parseFloat(d.costs13.office_costs_spend_against_budget.replace(',',''))*100)-100;
+
+        staffbudget = parseInt((parseFloat(d.costs14.staff_spend_against_budget.replace(',',''))/parseFloat(d.costs14.staff_maximum_budget_available.replace(',','')))*100);
+        staffchange = parseInt(parseFloat(d.costs14.staff_spend_against_budget.replace(',',''))/parseFloat(d.costs13.staff_spend_against_budget.replace(',',''))*100)-100;
+
+        accombudget = parseInt((parseFloat(d.costs14.accom_spend_against_budget.replace(',',''))/parseFloat(d.costs14.accom_maximum_budget_available.replace(',','')))*100);
+        accomchange = parseInt(parseFloat(d.costs14.accom_spend_against_budget.replace(',',''))/parseFloat(d.costs13.accom_spend_against_budget.replace(',',''))*100)-100;
+
+        tsbudget = parseInt((parseFloat(d.costs14.ts_spend_against_budget.replace(',',''))/parseFloat(d.costs14.ts_maximum_budget_available.replace(',','')))*100);
+        tschange = parseInt(parseFloat(d.costs14.ts_spend_against_budget.replace(',',''))/parseFloat(d.costs13.ts_spend_against_budget.replace(',',''))*100)-100;
+
+        overallbudget = parseInt((parseFloat(d.costs14.overall_total_spend.replace(',',''))/parseFloat(d.costs14.overall_total_spend.replace(',','')))*100);
+        overallchange = parseInt(parseFloat(d.costs14.overall_total_spend.replace(',',''))/parseFloat(d.costs13.overall_total_spend.replace(',',''))*100)-100;        
+
+
+        var table_body = "<thead><th>Type of Expense</th><th>Amount</th><th>% budget used</th><th>% change last year</th><th>Local Ranking</th></thead>"
+        table_body += "<tr><td>Office</td><td>£"+d.costs14.office_costs_spend_against_budget+"</td><td>"+officebudget+"%</td><td>"+officechange+"%</td><td>1st</td></tr>";
+        table_body += "<tr><td>Staff</td><td>£"+d.costs14.staff_spend_against_budget+"</td><td>"+staffbudget+"%</td><td>"+staffchange+"%</td><td>1st</td></tr>";
+        table_body += "<tr><td>Accommodation</td><td>£"+d.costs14.accom_spend_against_budget+"</td><td>"+accombudget+"%</td><td>"+accomchange+"%</td><td>1st</td></tr>";
+        table_body += "<tr><td>Travel & Substitnence</td><td>£"+d.costs14.ts_spend_against_budget+"</td><td>"+tsbudget+"%</td><td>"+tschange+"%</td><td>1st</td></tr>";
+        table_body += "<tr><td>Overall</td><td>£"+d.costs14.overall_total_spend+"</td><td>"+overallbudget+"%</td><td>"+overallchange+"%</td><td>1st</td></tr>";
+
+
+
+        $("#mptable").html(table_body);
     } else {
         x = width / 2;
         y = height / 2;
         k = 1;
         centered = null;
+        $("#details").hide();
     }
 
     g.selectAll("path")
@@ -251,5 +312,13 @@ function clicked(d) {
         .style("stroke-width", 1.5 / k + "px"); 
 }
         </script>
+
+        <div id="details">
+        	<h1 id="mpname"></h1>
+        	<h2 id="constituency"></h2>
+        	<p id="party"></p>
+        	<table id="mptable"></table>
+        </div>
+
     </body>
 </html>
