@@ -532,7 +532,6 @@ function clicked(d) {
 }
 
 function zoomed() {
-    d3.event.sourceEvent.stopPropagation();
     d3.select("g").attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
 }
 
