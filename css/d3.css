@@ -24,6 +24,7 @@
     color: green;
 }
 
+
 .constituency {
     fill: #e5e5e5;
     /*stroke: #fff;
@@ -39,6 +40,7 @@
 .conservatives { fill:rgba(5, 117, 201, 1); }
 .labour { fill:rgba(237, 30, 14, 1); }
 .snp { fill:rgba(235, 195, 28, 1); }
+.scottish-national-party { fill:rgba(235, 195, 28, 1); }
 .liberal-democrats { fill:rgba(254, 131, 0, 1); }
 .ukip { fill:rgba(113, 47, 135, 1); }
 .green-party { fill:rgba(120, 195, 30, 1); }
@@ -73,3 +75,62 @@ div.tooltip {
     */
     fill-opacity: 0.8;
 }
+
+.ui-autocomplete {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  float: left;
+  display: none;
+  min-width: 160px;
+  _width: 160px;
+  padding: 4px;
+  margin: 2px 0 0 0;
+  list-style: none;
+  background-color: #ffffff;
+  border-color: #ccc;
+  border-color: rgba(0, 0, 0, 0.2);
+  border-style: solid;
+  border-width: 1px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  -webkit-background-clip: padding-box;
+  -moz-background-clip: padding;
+  background-clip: padding-box;
+  *border-right-width: 2px;
+  *border-bottom-width: 2px;
+
+  .ui-menu-item > a.ui-corner-all {
+    display: block; 
+    padding: 3px 15px;
+    clear: both;
+    font-weight: normal;
+    line-height: 18px;
+    color: #555555;
+    white-space: nowrap;
+
+
+  }
+}
+
+.ui-widget-content .ui-state-focus {
+    color: #ffffff;
+    text-decoration: none;
+    background-color: #0088cc;
+    border-radius: 0px;
+    -webkit-border-radius: 0px;
+    -moz-border-radius: 0px;
+    background-image: none;
+}
+
+  .ui-autocomplete-category {
+    font-weight: bold;
+    padding: .2em .4em;
+    margin: .8em 0 .2em;
+    line-height: 1.5;
+  }
