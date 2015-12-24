@@ -134,3 +134,10 @@ div.tooltip {
     margin: .8em 0 .2em;
     line-height: 1.5;
   }
+
+  .label-alpha {
+  background-color: #d53880;
+  border-radius: 0px;
+}
+
+button { width: 100%; box-sizing: border-box; }

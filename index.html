@@ -44,7 +44,8 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">//Test</a>
+          <span class="label label-alpha">ALPHA</span>
+          <a class="navbar-brand" href="#">IPSA - MPs' Expenses</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
@@ -59,6 +60,7 @@
             <div class="col-sm-3 col-md-2 sidebar">
                 <h2>Filters</h2>
                 <br />
+                <span class="label label-default">Year Finder</span>
                 <div class="input-group" >
                     <span class="input-group-addon" id="basic-addon3">2014-15</span>
                   <div class="input-group-btn">
@@ -87,6 +89,44 @@
                     <button id="mporconstsubmit" class="btn btn-default" type="button">Find</button>
                   </span>
                 </div>
+                <br />
+                <span class="label label-default">Region Finder</span>
+                <div class="input-group" >
+                  <div class="input-group-btn">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Region <span class="caret"></span></button>
+                    <ul class="dropdown-menu dropdown-menu-left">
+                        <li><a href="#">East of England</a></li>
+                        <li><a href="#">East Midlands</a></li>
+                        <li><a href="#">London</a></li>
+                        <li><a href="#">North East</a></li>
+                        <li><a href="#">North West</a></li>
+                        <li><a href="#">Scotland</a></li>
+                        <li><a href="#">South East</a></li>
+                        <li><a href="#">South West</a></li>
+                        <li><a href="#">Wales</a></li>
+                    </ul>
+                  </div><!-- /btn-group -->
+                  <span class="input-group-btn">
+                    <button id="regionsubmit" class="btn btn-default" type="button">Find</button>
+                  </span>
+                </div><!-- /input-group -->
+                <br />
+                <span class="label label-default">Ministers Finder</span>
+                <div class="input-group" >
+                  <div class="input-group-btn">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Ministers <span class="caret"></span></button>
+                    <ul class="dropdown-menu dropdown-menu-left">
+                        <li><a href="#">Cabinet Ministers</a></li>
+                        <li><a href="#">All Ministers</a></li>
+                        <li><a href="#">Shadow Cabinet Ministers</a></li>
+                        <li><a href="#">All Shadow Ministers</a></li>
+                        <li><a href="#">All Front Benches</a></li>
+                    </ul>
+                  </div><!-- /btn-group -->
+                  <span class="input-group-btn">
+                    <button id="regionsubmit" class="btn btn-default" type="button">Find</button>
+                  </span>
+                </div><!-- /input-group -->
             </div>
             <div id="mainsection" class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
               <div id='map'></div>
@@ -295,8 +335,9 @@ function ready(error, topology, electionData,ipsaData14,ipsaData13) {
             tooltip.classed('hidden', true)
         })
         // zoom to click
-        .on('click', clicked);
-        ;
+        .on('click', clicked)
+        .call(zoom);
+        
 
     $("#postcode").keyup(function(event){
         if(event.keyCode == 13){
@@ -532,7 +573,10 @@ function clicked(d) {
 }
 
 function zoomed() {
-    d3.select("g").attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+
+    d3.select("g").attr("transform", "translate(" + (zoom.translate()[0]+d3.event.translate[0]) + "," + (zoom.translate()[1]+d3.event.translate[1]) + ")scale(" + (zoom.scale()+d3.event.scale) + ")");
+    console.log(zoom.scale())
+    console.log(zoom.translate())
 }
 
 
