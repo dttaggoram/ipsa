@@ -239,43 +239,41 @@ queue()
     .defer(d3.tsv, "data/election-2010results.tsv")
     .defer(d3.csv, "data/export-2014.csv")
     .defer(d3.csv, "data/export-2013.csv")
-    .defer(d3.xml, "http://data.parliament.uk/membersdataplatform/services/mnis/members/query/membership=all%7Ccommonsmemberbetween=2010-04-01and2015-03-31/GovernmentPosts%7COppositionPosts%7CConstituencies/")
+    //.defer(d3.xml, "http://data.parliament.uk/membersdataplatform/services/mnis/members/query/membership=all%7Ccommonsmemberbetween=2010-04-01and2015-03-31/GovernmentPosts%7COppositionPosts%7CConstituencies/")
     .await(ready) // ready refers to function below
 ;
 
-function ready(error, topology, electionData,ipsaData14,ipsaData13,membersfeed) {
+function ready(error, topology, electionData,ipsaData14,ipsaData13) {
      
     // console.log(electionData);
     // console.log(ipsaData14);
 
     //http://bl.ocks.org/mbostock/ec585e034819c06f5c99
     //http://data.parliament.uk/membersdataplatform/memberquery.aspx#dateinfotable
-
+/*
     membersfeed = [].map.call(membersfeed.querySelector("Members").querySelectorAll("Member"), function(member) {
-    return {
-      member_id: member.getAttribute("Member_Id"),
-      pims_id: member.getAttribute("Pims_Id"),
-      dods_id: member.getAttribute("Dods_Id"),
-      display_name: member.querySelector("DisplayAs").textContent,
-      list_name: member.querySelector("ListAs").textContent,
-      date_of_birth: member.querySelector("DateOfBirth").textContent,
-      date_of_death: member.querySelector("DateOfDeath").textContent,
-      party: member.querySelector("Party").textContent,
-      constituency: member.querySelector("Constituencies").querySelectorAll("Constituency"), function(constituency) {
-        return {constituency_name: constituency.querySelector("Name").textContent}
-      }
+        return {
+            member_id: member.getAttribute("Member_Id"),
+            pims_id: member.getAttribute("Pims_Id"),
+            dods_id: member.getAttribute("Dods_Id"),
+            display_name: member.querySelector("DisplayAs").textContent,
+            list_name: member.querySelector("ListAs").textContent,
+            date_of_birth: member.querySelector("DateOfBirth").textContent,
+            date_of_death: member.querySelector("DateOfDeath").textContent,
+            party: member.querySelector("Party").textContent,
+            constituency: member.querySelectorAll("Constituencies > Constituency")
     };
   });
 
 console.log(membersfeed);
-
+*/
     var constituencies = topojson.feature(topology, topology.objects.constituencies).features;
     var n = constituencies.length;
     var mporconstdata = [];
     // console.log(constituencies);
 
     // join datasets
-    // we will add the missing data points to the consituencies object
+    // we will add the missing data points to the constituencies object
     
     constituencies.forEach(function(d){
         
@@ -457,6 +455,8 @@ function NumStr(n) {
     });
 }
 
+var kscale = 1;
+
 // click to zoom
 function clicked(d) {
     var x, y, k, b, bx, by;
@@ -503,6 +503,8 @@ function clicked(d) {
         by = path.bounds(d)[1][1]-path.bounds(d)[0][1];
         if (bx > by) {b = bx} else {b = by}
         k = 400/b;
+        zoom.scale(k);
+        zoom.translate([x,y]);
         centered = d;
 
         height = window.innerHeight-$("#navbar").height() - 20 - 250;
@@ -582,6 +584,9 @@ function clicked(d) {
         x = width / 2;
         y = height / 2;
         k = 1;
+        zoom.scale(1);
+        zoom.translate([x,y]);
+        kscale = 1;
         centered = null;
         $("#details").hide();
         $("#details").width(0);
@@ -600,13 +605,18 @@ function clicked(d) {
         .duration(1250)
         .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
         .style("stroke-width", 1.5 / k + "px"); 
+    console.log(zoom.scale())
+    console.log(zoom.translate())
+    //console.log(kscale)
 }
 
 function zoomed() {
 
-    d3.select("g").attr("transform", "translate(" + (zoom.translate()[0]+d3.event.translate[0]) + "," + (zoom.translate()[1]+d3.event.translate[1]) + ")scale(" + (zoom.scale()+d3.event.scale) + ")");
-    console.log(zoom.scale())
+    d3.select("g")
+    .attr("transform", "scale(" + (d3.event.scale) + ")");
     console.log(zoom.translate())
+    console.log(zoom.scale())
+    //console.log(kscale)
 }
 
 
