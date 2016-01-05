@@ -92,18 +92,20 @@
                 <br />
                 <span class="label label-default">Region Finder</span>
                 <div class="input-group" >
-                  <div class="input-group-btn">
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Region <span class="caret"></span></button>
+                  <div id="regions" class="input-group-btn">
+                    <button  type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">All Regions <span class="caret"></span></button>
                     <ul class="dropdown-menu dropdown-menu-left">
-                        <li><a href="#">East of England</a></li>
-                        <li><a href="#">East Midlands</a></li>
-                        <li><a href="#">London</a></li>
-                        <li><a href="#">North East</a></li>
-                        <li><a href="#">North West</a></li>
-                        <li><a href="#">Scotland</a></li>
-                        <li><a href="#">South East</a></li>
-                        <li><a href="#">South West</a></li>
-                        <li><a href="#">Wales</a></li>
+                        <li><a id="all-regions" href="#">All Regions</a></li>
+                        <li><a id="Eastern" href="#">East of England</a></li>
+                        <li><a id="East-Midlands" href="#">East Midlands</a></li>
+                        <li><a id="London" href="#">London</a></li>
+                        <li><a id="North-East" href="#">North East</a></li>
+                        <li><a id="North-West" href="#">North West</a></li>
+                        <li><a id="Northern-Ireland" href="#">Northern Ireland</a></li>
+                        <li><a id="Scotland" href="#">Scotland</a></li>
+                        <li><a id="South-East" href="#">South East</a></li>
+                        <li><a id="South-West" href="#">South West</a></li>
+                        <li><a id="Wales" href="#">Wales</a></li>
                     </ul>
                   </div><!-- /btn-group -->
                   <span class="input-group-btn">
@@ -113,14 +115,14 @@
                 <br />
                 <span class="label label-default">Ministers Finder</span>
                 <div class="input-group" >
-                  <div class="input-group-btn">
+                  <div id="ministers" class="input-group-btn">
                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Ministers <span class="caret"></span></button>
                     <ul class="dropdown-menu dropdown-menu-left">
-                        <li><a href="#">Cabinet Ministers</a></li>
-                        <li><a href="#">All Ministers</a></li>
-                        <li><a href="#">Shadow Cabinet Ministers</a></li>
-                        <li><a href="#">All Shadow Ministers</a></li>
-                        <li><a href="#">All Front Benches</a></li>
+                        <li><a id="ministersnone" href="#">All Members</a></li>
+                        <li><a id="holdscabinetpost=true" href="#">Cabinet Ministers</a></li>
+                        <li><a id="holdsgovernmentpost=true" href="#">All Ministers</a></li>
+                        <li><a id="holdsshadowcabinetpost=true" href="#">Shad. Cab. Ministers</a></li>
+                        <li><a id="holdsoppositionpost=true" href="#">All Opp. Positions</a></li>
                     </ul>
                   </div><!-- /btn-group -->
                   <span class="input-group-btn">
@@ -162,6 +164,9 @@
     <script src="js/queue.v1.min.js"></script>
     <script src="js/topojson.v1.min.js"></script>
     <script>
+
+
+
       $.widget( "custom.catcomplete", $.ui.autocomplete, {
         _create: function() {
           this._super();
@@ -185,6 +190,11 @@
       });
     </script>
     <script>
+
+//Hide MP information bar
+$("#details").hide();    
+
+
 
 // create map
 
@@ -234,48 +244,31 @@ var tooltip = d3.select('#map').append('div')
 
 // load files
 queue()
-    //.defer(d3.json, "data/alluk.json")
-    .defer(d3.json, "data/constituencies-wni.topo.json")
+    .defer(d3.csv, "data/constituenciesregions.csv")
+    .defer(d3.json, "data/WholeUK.json")
     .defer(d3.tsv, "data/election-2010results.tsv")
     .defer(d3.csv, "data/export-2014.csv")
     .defer(d3.csv, "data/export-2013.csv")
-    //.defer(d3.xml, "http://data.parliament.uk/membersdataplatform/services/mnis/members/query/membership=all%7Ccommonsmemberbetween=2010-04-01and2015-03-31/GovernmentPosts%7COppositionPosts%7CConstituencies/")
     .await(ready) // ready refers to function below
 ;
 
-function ready(error, topology, electionData,ipsaData14,ipsaData13) {
-     
-    // console.log(electionData);
-    // console.log(ipsaData14);
+function ready(error, constituencydata, topology, electionData,ipsaData14,ipsaData13) {
 
-    //http://bl.ocks.org/mbostock/ec585e034819c06f5c99
-    //http://data.parliament.uk/membersdataplatform/memberquery.aspx#dateinfotable
-/*
-    membersfeed = [].map.call(membersfeed.querySelector("Members").querySelectorAll("Member"), function(member) {
-        return {
-            member_id: member.getAttribute("Member_Id"),
-            pims_id: member.getAttribute("Pims_Id"),
-            dods_id: member.getAttribute("Dods_Id"),
-            display_name: member.querySelector("DisplayAs").textContent,
-            list_name: member.querySelector("ListAs").textContent,
-            date_of_birth: member.querySelector("DateOfBirth").textContent,
-            date_of_death: member.querySelector("DateOfDeath").textContent,
-            party: member.querySelector("Party").textContent,
-            constituency: member.querySelectorAll("Constituencies > Constituency")
-    };
-  });
-
-console.log(membersfeed);
-*/
-    var constituencies = topojson.feature(topology, topology.objects.constituencies).features;
+    var constituencies = constituencydata;
+    var topology = topojson.feature(topology, topology.objects.WholeUK).features;
     var n = constituencies.length;
     var mporconstdata = [];
-    // console.log(constituencies);
 
     // join datasets
     // we will add the missing data points to the constituencies object
     
     constituencies.forEach(function(d){
+
+        featureTopoData = topology.filter(
+        function(n){ 
+            return d.id == n.properties.id
+        })
+        ;
         
         featureData = electionData.filter(
         function(n){ 
@@ -283,7 +276,6 @@ console.log(membersfeed);
         })
         ;
         
-        d.constituencyName = featureData[0].constituency_name;
         d.partyName = featureData[0].party_name;
         d.shareVotes = featureData[0].share_votes;
 
@@ -292,7 +284,7 @@ console.log(membersfeed);
             if (n.constituency.substring(n.constituency.length-1,n.constituency.length) == 'C') {
                 n.constituency = n.constituency.substring(0,n.constituency.length-3)
             }
-            return d.properties.PCON13NM == n.constituency;
+            return d.constituency_name == n.constituency;
         })
         ;
 
@@ -301,10 +293,13 @@ console.log(membersfeed);
             if (n.constituency.substring(n.constituency.length-1,n.constituency.length) == 'C') {
                 n.constituency = n.constituency.substring(0,n.constituency.length-3)
             }
-            return d.properties.PCON13NM == n.constituency;
+            return d.constituency_name == n.constituency;
         })
         ;
-        
+        d.type = featureTopoData[0].type;
+        d.geometry = featureTopoData[0].geometry;
+        d.properties = featureTopoData[0].properties;
+
         d.mp = featureData14[0].mp_name;
         d.costs14 = featureData14[0];
         d.costs13 = featureData13[0];
@@ -314,8 +309,15 @@ console.log(membersfeed);
         
     })
     ;
-    
-    // console.log(constituencies);
+
+    //Sorts list of MPs and Conts into order
+    mporconstdata.sort(function(a, b) {
+        if(a.category===b.category) {
+            return d3.ascending(a.label, b.label);
+        }
+            return d3.descending(a.category, b.category);
+    });
+
     
     // create a polygon for every constituency
     g.selectAll('.constituency')
@@ -326,7 +328,7 @@ console.log(membersfeed);
         .attr('id', function(d) { return d.id; })
         .attr('d', path)
         .attr('class', function(d){
-            return (d.partyName).toLocaleLowerCase().replace(/ /g,'-')
+            return (d.partyName).toLocaleLowerCase().replace(/ /g,'-').replace(/&/g,'-')
                 + ' constituency';
         })   
         // tooltip
@@ -340,11 +342,11 @@ console.log(membersfeed);
 
             tooltip
                 .classed('hidden', false)
-                .attr('style', 'left:' + (mouse[0]-(d.constituencyName.length)*6) + 'px; top:' + (mouse[1]+30) + 'px')
+                .attr('style', 'left:' + (mouse[0]-(d.constituency_name.length)*6) + 'px; top:' + (mouse[1]+30) + 'px')
                 // tooltip text:
                 .html(
                     '<b>' + d.mp + '</b><br />'
-                    + '<b>' + d.constituencyName + '</b></br>' 
+                    + '<b>' + d.constituency_name + '</b></br>' 
                     + d.partyName + '</br>' 
                     + d.shareVotes + '%'
                 )
@@ -356,8 +358,85 @@ console.log(membersfeed);
         // zoom to click
         .on('click', clicked)
         .call(zoom);
-        
 
+    //click on dropdowns function
+    $('.dropdown-menu a').on('click', function(){
+        $(this).parent().parent().prev().html($(this).html() + '<span class="caret"></span>'); 
+        if ($(this).parent().parent().parent().attr("id") == "regions") {
+            regionid = $(this).attr("id");
+            constituencies.forEach(function(d){
+
+                if (regionid == "all-regions") {
+                    partyclass = d.partyName.toLocaleLowerCase().replace(/ /g,'-').replace(/&/g,'-') + ' constituency';;
+                    g.select('#'+d.id).attr('class', partyclass);
+                }  
+                else if(d.region != regionid) {
+                    g.select('#'+d.id).attr("class","constituency");
+                }              
+                else {
+                    partyclass = d.partyName.toLocaleLowerCase().replace(/ /g,'-').replace(/&/g,'-') + ' constituency';;
+                    g.select('#'+d.id).attr('class', partyclass);
+                }
+
+
+            });
+        }
+
+
+        if ($(this).parent().parent().parent().attr("id") == "ministers") {
+            if($(this).attr("id") == "ministersnone") {
+                constituencies.forEach(function(d){
+                    partyclass = d.partyName.toLocaleLowerCase().replace(/ /g,'-').replace(/&/g,'-') + ' constituency';
+                    g.select('#'+d.id).attr('class', partyclass);
+                })   
+            }
+            else {
+                xmlurl = "http://data.parliament.uk/membersdataplatform/services/mnis/members/query/membership=all%7Ccommonsmemberbetween=2014-04-01and2015-03-31%7C"+$(this).attr("id")+"/GovernmentPosts%7COppositionPosts%7CConstituencies/";
+
+                //http://bl.ocks.org/mbostock/ec585e034819c06f5c99
+                //http://data.parliament.uk/membersdataplatform/memberquery.aspx#dateinfotable
+                console.log(xmlurl);
+
+                d3.xml(xmlurl, function(error, data) {
+
+                    membersfeed = [].map.call(data.querySelector("Members").querySelectorAll("Member"), function(member) {
+                        return {
+                            member_id: member.getAttribute("Member_Id"),
+                            pims_id: member.getAttribute("Pims_Id"),
+                            dods_id: member.getAttribute("Dods_Id"),
+                            display_name: member.querySelector("DisplayAs").textContent,
+                            list_name: member.querySelector("ListAs").textContent,
+                            date_of_birth: member.querySelector("DateOfBirth").textContent,
+                            date_of_death: member.querySelector("DateOfDeath").textContent,
+                            party: member.querySelector("Party").textContent,
+                            constituency: member.querySelectorAll("Constituencies > Constituency"),
+                            governmentposts: member.querySelectorAll("GovernmentPosts > GovernmentPost"),
+                            oppositionposts: member.querySelectorAll("GovernmentPosts > GovernmentPost")
+                            
+                        };
+                        
+                    });
+
+                    g.selectAll('.constituency').attr("class","constituency");
+                    membersincluded = [];
+                    for(i=0;i < membersfeed.length; i++) {
+                        name = membersfeed[i].list_name.split(",")[1].trim() + " " + membersfeed[i].list_name.split(",")[0].trim();
+                        constituencies.forEach(function(d){
+                            if(name == d.mp) {
+                                partyclass = d.partyName.toLocaleLowerCase().replace(/ /g,'-').replace(/&/g,'-') + ' constituency';
+                                g.select('#'+d.id).attr('class', partyclass);
+                            }   
+                        })
+                    }
+                    
+                });
+            }
+        }
+    })
+
+    
+
+    //Postcode finder
     $("#postcode").keyup(function(event){
         if(event.keyCode == 13){
             $("#postcodesubmit").click();
@@ -365,18 +444,20 @@ console.log(membersfeed);
     });
 
     $( "#postcodesubmit" ).click(function() {
+        $("#mporconst").val("");
         $.ajax({
             url: 'http://mapit.mysociety.org/postcode/' + $("#postcode").val(),
             type: 'GET',
             success: function(data) {
                 //called when successful
+
                 var cons;
                 for (c in data.areas) {
                     if(data.areas[c].type == 'WMC') { cons = data.areas[c].name; code = data.areas[c].codes.gss; }
                 }
-
+                console.log()
                 for (c in constituencies) {
-                    if(constituencies[c].id == code) clicked(constituencies[c]);
+                    if(constituencies[c].properties.id == code) clicked(constituencies[c]);
                 }
 
             
@@ -388,9 +469,10 @@ console.log(membersfeed);
         });
     });
 
+
+//Change numbers to string with st, nd, rd or th.
 function NumStr(n) {
     var number = n.toString();
-    //console.log(number.slice(0,1))
     if (number.slice(0,1) == "1" && number.length > 1) return n+"th";
     else if (number.slice(-1) == "1") return n+"st";
     else if (number.slice(-1) == "2") return n+"nd";
@@ -450,12 +532,11 @@ function NumStr(n) {
     });
 
     $( "#mporconstsubmit" ).click(function() {
+        $("#postcode").val("");
         clicked(mporconstdataclicked);
 
     });
 }
-
-var kscale = 1;
 
 // click to zoom
 function clicked(d) {
@@ -463,7 +544,7 @@ function clicked(d) {
     
         var nearbyconstituencies = [];
         $.ajax({
-            url: 'http://mapit.mysociety.org/area/' + d.id,
+            url: 'http://mapit.mysociety.org/area/' + d.properties.id,
             type: 'GET',
             dataType: 'jsonp',
             //async: false,
@@ -568,7 +649,7 @@ function clicked(d) {
 
 
         var table_body = "<thead><th>Type of Expense</th><th>Amount</th><th>% budget used</th><th>% change last year</th><th>Local Ranking</th></thead>"
-        table_body += "<tbody><tr><td>Office</td><td id='officespend'>£"+d.costs14.office_costs_spend_against_budget+"</td><td>"+officebudget+"%</td><td>"+officechange+"%"+officearrow+"</td><td id='officerank'></td></tr>";
+        table_body += "<tbody><tr><td>Office</td><td id='officespend'>£"+d.costs14.office_costs_spend_against_budget+"</td><td>"+officebudget+"%</td><td>"+officechange+"%"+officearrow+"</td><td id='officerank'>Loading...</td></tr>";
         table_body += "<tr><td>Staff</td><td id='staffspend'>£"+d.costs14.staff_spend_against_budget+"</td><td>"+staffbudget+"%</td><td>"+staffchange+"%"+staffarrow+"</td><td id='staffrank'>Loading...</td></tr>";
         table_body += "<tr><td>Accommodation</td><td id='accomspend'>£"+d.costs14.accom_spend_against_budget+"</td><td>"+accombudget+"%</td><td>"+accomchange+"%"+accomarrow+"</td><td id='accomrank'>Loading...</td></tr>";
         table_body += "<tr><td>Travel & Subsistence</td><td id='tsspend'>£"+d.costs14.ts_spend_against_budget+"</td><td>N/A</td><td>"+tschange+"%"+tsarrow+"</td><td id='tsrank'>Loading...</td></tr>";

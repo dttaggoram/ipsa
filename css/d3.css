@@ -44,7 +44,11 @@
 .liberal-democrats { fill:rgba(254, 131, 0, 1); }
 .ukip { fill:rgba(113, 47, 135, 1); }
 .green-party { fill:rgba(120, 195, 30, 1); }
-.plaid-cymru { fill: rgba(78, 159, 47, 1); } /*Plaid Cymru*/
+.plaid-cymru { fill: rgba(78, 159, 47, 1); }
+.sinn-fein { fill: rgba(0, 136, 0, 1); } 
+.democratic-unionist-party { fill: rgba(212, 106, 76, 1); }
+.alliance-party { fill: rgba(255, 215, 0, 1); }
+.social-democratic---labour-party { fill: rgba(0, 158, 96, 1); }
 
 /* tooltip */
 .hidden {
