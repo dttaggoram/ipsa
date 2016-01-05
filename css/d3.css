@@ -7,13 +7,21 @@
 
 #details {
     border: solid 1px #eee;
-	padding: 20px;
+	  padding: 20px;
     background-color: #f5f5f5;
   	position: absolute;
     height: 250px;
     width: 0px;
   	bottom: 0px;
     left:16%;
+}
+
+#footerlicense {
+  position: absolute;
+  bottom: 0px;
+  padding: 5px;
+  font-size: small;
+  text-align: justify;
 }
 
 .red {
