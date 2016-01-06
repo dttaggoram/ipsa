@@ -169,8 +169,6 @@
     <script src="js/d3.legend.min.js"></script>
     <script>
 
-
-
       $.widget( "custom.catcomplete", $.ui.autocomplete, {
         _create: function() {
           this._super();
@@ -215,13 +213,12 @@ var projection = d3.geo.albers()
     .translate([width/2,height/2])
     .scale(6*height)
     ;
-    console.log(projection.scale())
-    console.log(projection.translate())
 
 var zoom = d3.behavior.zoom()
-    .scaleExtent([1, 10])
-    .translate([-(width/2),-(height/2)])
-    .on("zoom", zoomed);
+    .scaleExtent([1, 15])
+    .translate([0,0])
+    .scale(1)
+    .on("zoom", clicked);
 
 
 var path = d3.geo.path()
@@ -515,7 +512,7 @@ function NumStr(n) {
         ranks = $( "#ranks" ).val().split(",");
         for (a=0;a<ranks.length;a++) {
             for (b=0; b<constituencies.length; b++) {
-                if(ranks[a] == constituencies[b].properties.PCON13CD) {
+                if(ranks[a] == constituencies[b].id) {
                     if(parseFloat(constituencies[b].costs14.office_costs_spend_against_budget)<parseFloat($("#officespend").html().replace("£", ""))) {
                     rankedOffice++}
                     if(parseFloat(constituencies[b].costs14.staff_spend_against_budget)<parseFloat($("#staffspend").html().replace("£", ""))) {
@@ -562,163 +559,182 @@ function NumStr(n) {
     });
 }
 
-// click to zoom
-function clicked(d) {
-    var x, y, k, b, bx, by;
-    
-        var nearbyconstituencies = [];
-        $.ajax({
-            url: 'http://mapit.mysociety.org/area/' + d.id,
-            type: 'GET',
-            dataType: 'jsonp',
-            //async: false,
-            success: function(data) {
-                //called when successful
-                $.ajax({
-                    url:'http://mapit.mysociety.org/area/'+data.id+'/touches?type=WMC',
-                    type: 'GET',
-                    //async: false,
-                    dataType: 'jsonp',
-                    success: function(data) {
 
-                        for (c in data) {
-                            nearbyconstituencies.push(data[c].codes.gss)
+
+// click to zoom
+function clicked(d) { 
+    
+    var x, y, k, b, bx, by;    
+    
+    $('body').one("click", function(event) {
+            event.preventDefault()
+            console.log(event.defaultPrevented);
+
+        console.log(event)
+        if (d && centered !== d) {
+
+            var nearbyconstituencies = [];
+            $.ajax({
+                url: 'http://mapit.mysociety.org/area/' + d.id,
+                type: 'GET',
+                dataType: 'jsonp',
+                //async: false,
+                success: function(data) {
+                    //called when successful
+                    $.ajax({
+                        url:'http://mapit.mysociety.org/area/'+data.id+'/touches?type=WMC',
+                        type: 'GET',
+                        //async: false,
+                        dataType: 'jsonp',
+                        success: function(data) {
+
+                            for (c in data) {
+                                nearbyconstituencies.push(data[c].codes.gss)
+                            }
+
+                            $("#ranks").val( nearbyconstituencies ).trigger('change');
                         }
 
-                        $("#ranks").val( nearbyconstituencies ).trigger('change');
-                    }
+                    })
 
-                })
-
-            
-            },
-            error: function(e) {
-                //called when there is an error
-                alert("Error")
-            }
-        });
-
-
-    if (d && centered !== d) {
-        //console.log(nearbyconstituencies)
-        var centroid = path.centroid(d);
-        x = centroid[0];
-        y = centroid[1];
-        bx = path.bounds(d)[1][0]-path.bounds(d)[0][0];
-        by = path.bounds(d)[1][1]-path.bounds(d)[0][1];
-        if (bx > by) {b = bx} else {b = by}
-        k = 400/b;
-        zoom.scale(k);
-        zoom.translate([x,y]);
-        centered = d;
-
-        height = window.innerHeight-$("#navbar").height() - 20 - 250;
-
-        svg
-        .attr('height', height);
-
-        svg.select("rect")
-        .attr("height", height);
-
-        $("#details").width(width-40);
-        $("#details").show();
-        $("#mpname").html(d.mp);
-        $("#constituency").html(d.constituencyName);
-        $("#party").html(d.partyName + " / Votes: " + d.shareVotes + "%");
-
-        officebudget = parseInt((parseFloat(d.costs14.office_costs_spend_against_budget.replace(',',''))/parseFloat(d.costs14.office_costs_maximum_budget_available.replace(',','')))*100);
-        officechange = parseInt(parseFloat(d.costs14.office_costs_spend_against_budget.replace(',',''))/parseFloat(d.costs13.office_costs_spend_against_budget.replace(',',''))*100)-100;
-
-        if(officechange >0) {
-            officearrow = "<span class='glyphicon glyphicon-arrow-up red' aria-hidden='true'></span>"
-        } else if (officechange <0){
-             officearrow = "<span class='glyphicon glyphicon-arrow-down green' aria-hidden='true'></span>" 
-         } else { officearrow = ""; } 
-
-        staffbudget = parseInt((parseFloat(d.costs14.staff_spend_against_budget.replace(',',''))/parseFloat(d.costs14.staff_maximum_budget_available.replace(',','')))*100);
-        staffchange = parseInt(parseFloat(d.costs14.staff_spend_against_budget.replace(',',''))/parseFloat(d.costs13.staff_spend_against_budget.replace(',',''))*100)-100;
-
-        if(staffchange >0) {
-            staffarrow = "<span class='glyphicon glyphicon-arrow-up red' aria-hidden='true'></span>"
-        } else if (staffchange <0){
-             staffarrow = "<span class='glyphicon glyphicon-arrow-down green' aria-hidden='true'></span>" 
-         } else { staffarrow = ""; }        
-
-        accombudget = parseInt((parseFloat(d.costs14.accom_spend_against_budget.replace(',',''))/parseFloat(d.costs14.accom_maximum_budget_available.replace(',','')))*100);
-        accomchange = parseInt(parseFloat(d.costs14.accom_spend_against_budget.replace(',',''))/parseFloat(d.costs13.accom_spend_against_budget.replace(',',''))*100)-100;
-
-        if(accomchange >0) {
-            accomarrow = "<span class='glyphicon glyphicon-arrow-up red' aria-hidden='true'></span>"
-        } else if (accomchange <0){
-             accomarrow = "<span class='glyphicon glyphicon-arrow-down green' aria-hidden='true'></span>" 
-         } else { accomarrow = ""; }
-
-
-        tschange = parseInt(parseFloat(d.costs14.ts_spend_against_budget.replace(',',''))/parseFloat(d.costs13.ts_spend_against_budget.replace(',',''))*100)-100;
-
-        if(tschange >0) {
-            tsarrow = "<span class='glyphicon glyphicon-arrow-up red' aria-hidden='true'></span>"
-        } else if (tschange <0){
-             tsarrow = "<span class='glyphicon glyphicon-arrow-down green' aria-hidden='true'></span>" 
-         } else { tsarrow = ""; }
-
-        overallbudget = parseInt((parseFloat(d.costs14.overall_total_spend.replace(',',''))/parseFloat(d.costs14.overall_total_spend.replace(',','')))*100);
-        overallchange = parseInt(parseFloat(d.costs14.overall_total_spend.replace(',',''))/parseFloat(d.costs13.overall_total_spend.replace(',',''))*100)-100;
-
-        if(overallchange >0) {
-            overallarrow = "<span class='glyphicon glyphicon-arrow-up red' aria-hidden='true'></span>"
-        } else if (overallchange <0){
-             overallarrow = "<span class='glyphicon glyphicon-arrow-down green' aria-hidden='true'></span>" 
-         } else { overallarrow = ""; }                
-
-
-        var table_body = "<thead><th>Type of Expense</th><th>Amount</th><th>% budget used</th><th>% change last year</th><th>Local Ranking</th></thead>"
-        table_body += "<tbody><tr><td>Office</td><td id='officespend'>£"+d.costs14.office_costs_spend_against_budget+"</td><td>"+officebudget+"%</td><td>"+officechange+"%"+officearrow+"</td><td id='officerank'>Loading...</td></tr>";
-        table_body += "<tr><td>Staff</td><td id='staffspend'>£"+d.costs14.staff_spend_against_budget+"</td><td>"+staffbudget+"%</td><td>"+staffchange+"%"+staffarrow+"</td><td id='staffrank'>Loading...</td></tr>";
-        table_body += "<tr><td>Accommodation</td><td id='accomspend'>£"+d.costs14.accom_spend_against_budget+"</td><td>"+accombudget+"%</td><td>"+accomchange+"%"+accomarrow+"</td><td id='accomrank'>Loading...</td></tr>";
-        table_body += "<tr><td>Travel & Subsistence</td><td id='tsspend'>£"+d.costs14.ts_spend_against_budget+"</td><td>N/A</td><td>"+tschange+"%"+tsarrow+"</td><td id='tsrank'>Loading...</td></tr>";
-        table_body += "<tr><td><strong>Overall</strong></td><td id='overallspend'>£"+d.costs14.overall_total_spend+"</td><td>"+overallbudget+"%</td><td>"+overallchange+"%"+overallarrow+"</td><td id='overallrank'>Loading...</td></tr></tbody>";
+                
+                },
+                error: function(e) {
+                    //called when there is an error
+                    alert("Error")
+                }
+            });
 
 
 
-        $("#mptable").html(table_body);
-    } else {
+            //console.log(nearbyconstituencies)
 
-        height = window.innerHeight-$("#navbar").height() - 20;
 
-        x = width / 2;
-        y = height / 2;
-        k = 1;
-        centered = null;
-        $("#details").hide();
-        $("#details").width(0);
+            height = window.innerHeight-$("#navbar").height() - 20 - 250;
+            svg
+            .attr('height', height);
+            svg.select("rect")
+            .attr("height", height);
 
-        svg
-        .attr('height', height);
+            bx = path.bounds(d)[1][0]-path.bounds(d)[0][0];
+            by = path.bounds(d)[1][1]-path.bounds(d)[0][1];
+            if (bx > by) {b = bx} else {b = by}
+            k = 400/b;
+            if (k > 15) k = 15;
+            console.log(bx + "|"+ by)
+            var centroid = path.centroid(d);
+            x = centroid[0];
+            y = centroid[1];
 
-        svg.select("rect")
-        .attr("height", height);
-    }
+            zoom.translate([((width/2)+(-x*k)),((height/2)+(-y*k))]);
+            zoom.scale(k);
+            centered = d;
 
-    g.selectAll("path")
+            $("#details").width(width-40);
+            $("#details").show();
+            $("#mpname").html(d.mp);
+            $("#constituency").html(d.constituencyName);
+            $("#party").html(d.partyName + " / Votes: " + d.shareVotes + "%");
+
+            officebudget = parseInt((parseFloat(d.costs14.office_costs_spend_against_budget.replace(',',''))/parseFloat(d.costs14.office_costs_maximum_budget_available.replace(',','')))*100);
+            officechange = parseInt(parseFloat(d.costs14.office_costs_spend_against_budget.replace(',',''))/parseFloat(d.costs13.office_costs_spend_against_budget.replace(',',''))*100)-100;
+
+            if(officechange >0) {
+                officearrow = "<span class='glyphicon glyphicon-arrow-up red' aria-hidden='true'></span>"
+            } else if (officechange <0){
+                 officearrow = "<span class='glyphicon glyphicon-arrow-down green' aria-hidden='true'></span>" 
+             } else { officearrow = ""; } 
+
+            staffbudget = parseInt((parseFloat(d.costs14.staff_spend_against_budget.replace(',',''))/parseFloat(d.costs14.staff_maximum_budget_available.replace(',','')))*100);
+            staffchange = parseInt(parseFloat(d.costs14.staff_spend_against_budget.replace(',',''))/parseFloat(d.costs13.staff_spend_against_budget.replace(',',''))*100)-100;
+
+            if(staffchange >0) {
+                staffarrow = "<span class='glyphicon glyphicon-arrow-up red' aria-hidden='true'></span>"
+            } else if (staffchange <0){
+                 staffarrow = "<span class='glyphicon glyphicon-arrow-down green' aria-hidden='true'></span>" 
+             } else { staffarrow = ""; }        
+
+            accombudget = parseInt((parseFloat(d.costs14.accom_spend_against_budget.replace(',',''))/parseFloat(d.costs14.accom_maximum_budget_available.replace(',','')))*100);
+            accomchange = parseInt(parseFloat(d.costs14.accom_spend_against_budget.replace(',',''))/parseFloat(d.costs13.accom_spend_against_budget.replace(',',''))*100)-100;
+
+            if(accomchange >0) {
+                accomarrow = "<span class='glyphicon glyphicon-arrow-up red' aria-hidden='true'></span>"
+            } else if (accomchange <0){
+                 accomarrow = "<span class='glyphicon glyphicon-arrow-down green' aria-hidden='true'></span>" 
+             } else { accomarrow = ""; }
+
+
+            tschange = parseInt(parseFloat(d.costs14.ts_spend_against_budget.replace(',',''))/parseFloat(d.costs13.ts_spend_against_budget.replace(',',''))*100)-100;
+
+            if(tschange >0) {
+                tsarrow = "<span class='glyphicon glyphicon-arrow-up red' aria-hidden='true'></span>"
+            } else if (tschange <0){
+                 tsarrow = "<span class='glyphicon glyphicon-arrow-down green' aria-hidden='true'></span>" 
+             } else { tsarrow = ""; }
+
+            overallbudget = parseInt((parseFloat(d.costs14.overall_total_spend.replace(',',''))/parseFloat(d.costs14.overall_total_spend.replace(',','')))*100);
+            overallchange = parseInt(parseFloat(d.costs14.overall_total_spend.replace(',',''))/parseFloat(d.costs13.overall_total_spend.replace(',',''))*100)-100;
+
+            if(overallchange >0) {
+                overallarrow = "<span class='glyphicon glyphicon-arrow-up red' aria-hidden='true'></span>"
+            } else if (overallchange <0){
+                 overallarrow = "<span class='glyphicon glyphicon-arrow-down green' aria-hidden='true'></span>" 
+             } else { overallarrow = ""; }                
+
+
+            var table_body = "<thead><th>Type of Expense</th><th>Amount</th><th>% budget used</th><th>% change last year</th><th>Local Ranking</th></thead>"
+            table_body += "<tbody><tr><td>Office</td><td id='officespend'>£"+d.costs14.office_costs_spend_against_budget+"</td><td>"+officebudget+"%</td><td>"+officechange+"%"+officearrow+"</td><td id='officerank'>Loading...</td></tr>";
+            table_body += "<tr><td>Staff</td><td id='staffspend'>£"+d.costs14.staff_spend_against_budget+"</td><td>"+staffbudget+"%</td><td>"+staffchange+"%"+staffarrow+"</td><td id='staffrank'>Loading...</td></tr>";
+            table_body += "<tr><td>Accommodation</td><td id='accomspend'>£"+d.costs14.accom_spend_against_budget+"</td><td>"+accombudget+"%</td><td>"+accomchange+"%"+accomarrow+"</td><td id='accomrank'>Loading...</td></tr>";
+            table_body += "<tr><td>Travel & Subsistence</td><td id='tsspend'>£"+d.costs14.ts_spend_against_budget+"</td><td>N/A</td><td>"+tschange+"%"+tsarrow+"</td><td id='tsrank'>Loading...</td></tr>";
+            table_body += "<tr><td><strong>Overall</strong></td><td id='overallspend'>£"+d.costs14.overall_total_spend+"</td><td>"+overallbudget+"%</td><td>"+overallchange+"%"+overallarrow+"</td><td id='overallrank'>Loading...</td></tr></tbody>";
+
+
+
+            $("#mptable").html(table_body);
+        }
+        else {
+
+            height = window.innerHeight-$("#navbar").height() - 20;
+
+            svg
+            .attr('height', height);
+            svg.select("rect")
+            .attr("height", height);
+
+            zoom.translate([0,0]);
+            zoom.scale(1);
+            centered = null;
+            $("#details").hide();
+            $("#details").width(0);
+        }
+
+        g.selectAll("path")
         .classed("active", centered && function(d) { return d === centered; });
-
-    g.transition()
+        g.transition()
         .duration(1250)
-        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
-        .style("stroke-width", 1.5 / k + "px"); 
-    console.log(zoom.scale())
-    console.log(zoom.translate())
+        .attr("transform", "translate(" + (zoom.translate()) + ")scale(" + (zoom.scale()) + ")");
+
+    });
+
+    $('body').one("wheel", function() {
+        g.transition()
+        .duration(0)
+        .attr("transform", "translate(" + zoom.translate() + ")scale(" + (zoom.scale()) + ")");
+
+    });
+
 }
 
-function zoomed() {
 
-    d3.selectAll(".constituency")
-    .attr("transform", "translate(" + (d3.event.translate[0]) + "," + (d3.event.translate[1]) +  ")scale(" + (d3.event.scale) + ")");
-    console.log(zoom.translate())
-    console.log(zoom.scale())
-    //console.log(kscale)
-}
+
+/*function zoomed() {
+
+   g.transition().duration(0)
+    .attr("transform", "translate(" + (zoom.translate()) + ")scale(" + (zoom.scale()) + ")");
+    console.log("zoomscale" + zoom.scale())
+    console.log("zoomtranslate" + zoom.translate())
+}*/
 
 
 
