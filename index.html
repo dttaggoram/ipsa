@@ -62,16 +62,19 @@
                 <br />
                 <span class="label label-default">Year Finder</span>
                 <div class="input-group" >
-                    <span class="input-group-addon" id="basic-addon3">2014-15</span>
-                  <div class="input-group-btn">
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Year <span class="caret"></span></button>
-                    <ul class="dropdown-menu dropdown-menu-right">
-                        <li><a href="#">2014-15</a></li>
-                        <li><a href="#">2013-14</a></li>
+                  <div id="year" class="input-group-btn">
+                    <button  type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">2014-15 <span class="caret"></span></button>
+                    <ul class="dropdown-menu dropdown-menu-left">
+                        <li><a id="year2015" href="#">2015-16 (incomplete)</a></li>
+                        <li><a id="year2014" href="#">2014-15</a></li>
+                        <li><a id="year2013" href="#">2013-14</a></li>
                         <li role="separator" class="divider"></li>
-                        <li><a href="#">2010-15</a></li>
+                        <li><a id="parlia2010" href="#">2010-15</a></li>
                     </ul>
                   </div><!-- /btn-group -->
+                  <span class="input-group-btn">
+                    <button id="yearsubmit" class="btn btn-default" type="button">Load</button>
+                  </span>
                 </div><!-- /input-group -->
                 <br />
                 <span class="label label-default">Postcode Finder</span>
@@ -94,7 +97,7 @@
                 <div class="input-group" >
                   <div id="regions" class="input-group-btn">
                     <button  type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">All Regions <span class="caret"></span></button>
-                    <ul class="dropdown-menu dropdown-menu-left">
+                    <ul class="dropdown-menu dropdown-menu-left regionslist">
                         <li><a id="all-regions" href="#">All Regions</a></li>
                         <li><a id="Eastern" href="#">East of England</a></li>
                         <li><a id="East-Midlands" href="#">East Midlands</a></li>
@@ -109,7 +112,7 @@
                     </ul>
                   </div><!-- /btn-group -->
                   <span class="input-group-btn">
-                    <button id="regionsubmit" class="btn btn-default" type="button">Find</button>
+                    <button id="regionsubmit" class="btn btn-default" type="button">Load</button>
                   </span>
                 </div><!-- /input-group -->
                 <br />
@@ -119,14 +122,12 @@
                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Ministers <span class="caret"></span></button>
                     <ul class="dropdown-menu dropdown-menu-left">
                         <li><a id="ministersnone" href="#">All Members</a></li>
-                        <li><a id="holdscabinetpost=true" href="#">Cabinet Ministers</a></li>
-                        <li><a id="holdsgovernmentpost=true" href="#">All Ministers</a></li>
-                        <li><a id="holdsshadowcabinetpost=true" href="#">Shad. Cab. Ministers</a></li>
-                        <li><a id="holdsoppositionpost=true" href="#">All Opp. Positions</a></li>
+                        <li><a id="heldcabinetpostbetween=" href="#">Cabinet Ministers</a></li>
+                        <li><a id="heldshadowcabinetpostbetween" href="#">Shad. Cab. Ministers</a></li>
                     </ul>
                   </div><!-- /btn-group -->
                   <span class="input-group-btn">
-                    <button id="regionsubmit" class="btn btn-default" type="button">Find</button>
+                    <button id="regionsubmit" class="btn btn-default" type="button">Load</button>
                   </span>
                 </div><!-- /input-group -->
                 <div id="footerlicense">
@@ -190,9 +191,24 @@
           });
         }
       });
+
+        function getFiscalY(d)
+        {
+            var fiscalYear;
+            if (d.getMonth() > 8)
+                { fiscalYear = d.getFullYear() + 1;}
+            else {
+                fiscalYear = d.getFullYear();}
+            return fiscalYear
+        }   
+
     </script>
     <script>
 
+        date = new Date();
+        startdate = getFiscalY(date)-2+"-04-01";
+        enddate = getFiscalY(date)-1+"-03-31";
+    
 //Hide MP information bar
 $("#details").hide();    
 
@@ -251,10 +267,7 @@ svg.select(".legendOrdinal")
 svg.append("rect")
     .attr("class", "background")
     .attr("width", width)
-    .attr("height", height)
-    // zoom to click
-    .on("click", clicked)
-    .call(zoom);
+    .attr("height", height);
 
 var g = svg.append("g");
 
@@ -274,7 +287,7 @@ queue()
     .await(ready) // ready refers to function below
 ;
 
-function ready(error, constituencydata, topology, electionData,ipsaData14,ipsaData13) {
+function ready(error, constituencydata, topology, electionData,ipsaDataThisYear,ipsaDataLastYear) {
 
     var constituencies = constituencydata;
     var topology = topojson.feature(topology, topology.objects.WholeUK).features;
@@ -301,7 +314,7 @@ function ready(error, constituencydata, topology, electionData,ipsaData14,ipsaDa
         d.partyName = featureData[0].party_name;
         d.shareVotes = featureData[0].share_votes;
 
-        featureData14 = ipsaData14.filter(
+        featureDataThisYear = ipsaDataThisYear.filter(
         function(n){ 
             if (n.constituency.substring(n.constituency.length-1,n.constituency.length) == 'C') {
                 n.constituency = n.constituency.substring(0,n.constituency.length-3)
@@ -310,7 +323,7 @@ function ready(error, constituencydata, topology, electionData,ipsaData14,ipsaDa
         })
         ;
 
-        featureData13 = ipsaData13.filter(
+        featureDataLastYear = ipsaDataLastYear.filter(
         function(n){ 
             if (n.constituency.substring(n.constituency.length-1,n.constituency.length) == 'C') {
                 n.constituency = n.constituency.substring(0,n.constituency.length-3)
@@ -322,9 +335,9 @@ function ready(error, constituencydata, topology, electionData,ipsaData14,ipsaDa
         d.geometry = featureTopoData[0].geometry;
         d.properties = featureTopoData[0].properties;
 
-        d.mp = featureData14[0].mp_name;
-        d.costs14 = featureData14[0];
-        d.costs13 = featureData13[0];
+        d.mp = featureDataThisYear[0].mp_name;
+        d.costsThisYear = featureDataThisYear[0];
+        d.costLastYear = featureDataLastYear[0];
 
         mporconstdata.push({ label: d.mp, category: "MP", data:d });
         mporconstdata.push({ label: d.constituencyName, category: "Constituency", data:d })
@@ -378,7 +391,6 @@ function ready(error, constituencydata, topology, electionData,ipsaData14,ipsaDa
             tooltip.classed('hidden', true)
         })
         // zoom to click
-        .on('click', clicked)
         .call(zoom);
 
     //click on dropdowns function
@@ -386,6 +398,7 @@ function ready(error, constituencydata, topology, electionData,ipsaData14,ipsaDa
         $(this).parent().parent().prev().html($(this).html() + '<span class="caret"></span>'); 
         if ($(this).parent().parent().parent().attr("id") == "regions") {
             regionid = $(this).attr("id");
+            regiongeos = [];
             constituencies.forEach(function(d){
 
                 if (regionid == "all-regions") {
@@ -396,12 +409,40 @@ function ready(error, constituencydata, topology, electionData,ipsaData14,ipsaDa
                     g.select('#'+d.id).attr("class","constituency");
                 }              
                 else {
+                    regiongeos.push(d.geometry);
+                    console.log(d.geometry)
+
                     partyclass = d.partyName.toLocaleLowerCase().replace(/ /g,'-').replace(/&/g,'-') + ' constituency';;
                     g.select('#'+d.id).attr('class', partyclass);
                 }
 
 
             });
+
+        regionpath = { "type": "GeometryCollection",
+                        "geometries": regiongeos
+                      }
+
+            console.log(regionpath)
+
+            bx = path.bounds(regionpath)[1][0]-path.bounds(regionpath)[0][0];
+            by = path.bounds(regionpath)[1][1]-path.bounds(regionpath)[0][1];
+            if (bx > by) {b = bx} else {b = by}
+            k = 500/b;
+            if (k > 15) k = 15;
+            console.log(bx + "|"+ by)
+            var centroid = path.centroid(regionpath);
+            x = centroid[0];
+            y = centroid[1];
+
+            zoom.translate([((width/2)+(-x*k)),((height/2)+(-y*k))]);
+            zoom.scale(k);
+        
+        g.transition()
+        .duration(1250)
+        .attr("transform", "translate(" + (zoom.translate()) + ")scale(" + (zoom.scale()) + ")");
+
+
         }
 
 
@@ -413,7 +454,7 @@ function ready(error, constituencydata, topology, electionData,ipsaData14,ipsaDa
                 })   
             }
             else {
-                xmlurl = "http://data.parliament.uk/membersdataplatform/services/mnis/members/query/membership=all%7Ccommonsmemberbetween=2014-04-01and2015-03-31%7C"+$(this).attr("id")+"/GovernmentPosts%7COppositionPosts%7CConstituencies/";
+                xmlurl = "http://data.parliament.uk/membersdataplatform/services/mnis/members/query/membership=all%7Ccommonsmemberbetween="+startdate+"and"+enddate+"%7C"+$(this).attr("id")+startdate+"and"+enddate+"/GovernmentPosts%7COppositionPosts%7CConstituencies/";
 
                 //http://bl.ocks.org/mbostock/ec585e034819c06f5c99 Tutorial on d3 XML
                 //http://data.parliament.uk/membersdataplatform/memberquery.aspx#dateinfotable Guide to API
@@ -432,7 +473,7 @@ function ready(error, constituencydata, topology, electionData,ipsaData14,ipsaDa
                             party: member.querySelector("Party").textContent,
                             constituency: member.querySelectorAll("Constituencies > Constituency"),
                             governmentposts: member.querySelectorAll("GovernmentPosts > GovernmentPost"),
-                            oppositionposts: member.querySelectorAll("GovernmentPosts > GovernmentPost")
+                            oppositionposts: member.querySelectorAll("OppositionPosts > OppositionPost")
                             
                         };
                         
@@ -449,13 +490,11 @@ function ready(error, constituencydata, topology, electionData,ipsaData14,ipsaDa
                             }   
                         })
                     }
-                    
                 });
             }
         }
     })
 
-    
 
     //Postcode finder
     $("#postcode").keyup(function(event){
@@ -476,7 +515,6 @@ function ready(error, constituencydata, topology, electionData,ipsaData14,ipsaDa
                 for (c in data.areas) {
                     if(data.areas[c].type == 'WMC') { cons = data.areas[c].name; code = data.areas[c].codes.gss; }
                 }
-                console.log()
                 for (c in constituencies) {
                     if(constituencies[c].properties.id == code) clicked(constituencies[c]);
                 }
@@ -513,15 +551,15 @@ function NumStr(n) {
         for (a=0;a<ranks.length;a++) {
             for (b=0; b<constituencies.length; b++) {
                 if(ranks[a] == constituencies[b].id) {
-                    if(parseFloat(constituencies[b].costs14.office_costs_spend_against_budget)<parseFloat($("#officespend").html().replace("£", ""))) {
+                    if(parseFloat(constituencies[b].costsThisYear.office_costs_spend_against_budget)<parseFloat($("#officespend").html().replace("£", ""))) {
                     rankedOffice++}
-                    if(parseFloat(constituencies[b].costs14.staff_spend_against_budget)<parseFloat($("#staffspend").html().replace("£", ""))) {
+                    if(parseFloat(constituencies[b].costsThisYear.staff_spend_against_budget)<parseFloat($("#staffspend").html().replace("£", ""))) {
                     rankedStaff++}
-                    if(parseFloat(constituencies[b].costs14.accom_spend_against_budget)<parseFloat($("#accomspend").html().replace("£", ""))) {
+                    if(parseFloat(constituencies[b].costsThisYear.accom_spend_against_budget)<parseFloat($("#accomspend").html().replace("£", ""))) {
                     rankedAccom++}
-                    if(parseFloat(constituencies[b].costs14.ts_spend_against_budget)<parseFloat($("#tsspend").html().replace("£", ""))) {
+                    if(parseFloat(constituencies[b].costsThisYear.ts_spend_against_budget)<parseFloat($("#tsspend").html().replace("£", ""))) {
                     rankedTS++}
-                    if(parseFloat(constituencies[b].costs14.overall_total_spend)<parseFloat($("#overallspend").html().replace("£", ""))) {
+                    if(parseFloat(constituencies[b].costsThisYear.overall_total_spend)<parseFloat($("#overallspend").html().replace("£", ""))) {
                     rankedOverall++}
 
                 }
@@ -559,20 +597,14 @@ function NumStr(n) {
     });
 }
 
-
-
 // click to zoom
 function clicked(d) { 
     
-    var x, y, k, b, bx, by;    
-    
+    var x, y, k, b, bx, by;
+
     $('body').one("click", function(event) {
-            event.preventDefault()
-            console.log(event.defaultPrevented);
-
-        console.log(event)
+        
         if (d && centered !== d) {
-
             var nearbyconstituencies = [];
             $.ajax({
                 url: 'http://mapit.mysociety.org/area/' + d.id,
@@ -604,11 +636,7 @@ function clicked(d) {
                     alert("Error")
                 }
             });
-
-
-
-            //console.log(nearbyconstituencies)
-
+            
 
             height = window.innerHeight-$("#navbar").height() - 20 - 250;
             svg
@@ -636,8 +664,8 @@ function clicked(d) {
             $("#constituency").html(d.constituencyName);
             $("#party").html(d.partyName + " / Votes: " + d.shareVotes + "%");
 
-            officebudget = parseInt((parseFloat(d.costs14.office_costs_spend_against_budget.replace(',',''))/parseFloat(d.costs14.office_costs_maximum_budget_available.replace(',','')))*100);
-            officechange = parseInt(parseFloat(d.costs14.office_costs_spend_against_budget.replace(',',''))/parseFloat(d.costs13.office_costs_spend_against_budget.replace(',',''))*100)-100;
+            officebudget = parseInt((parseFloat(d.costsThisYear.office_costs_spend_against_budget.replace(',',''))/parseFloat(d.costsThisYear.office_costs_maximum_budget_available.replace(',','')))*100);
+            officechange = parseInt(parseFloat(d.costsThisYear.office_costs_spend_against_budget.replace(',',''))/parseFloat(d.costLastYear.office_costs_spend_against_budget.replace(',',''))*100)-100;
 
             if(officechange >0) {
                 officearrow = "<span class='glyphicon glyphicon-arrow-up red' aria-hidden='true'></span>"
@@ -645,8 +673,8 @@ function clicked(d) {
                  officearrow = "<span class='glyphicon glyphicon-arrow-down green' aria-hidden='true'></span>" 
              } else { officearrow = ""; } 
 
-            staffbudget = parseInt((parseFloat(d.costs14.staff_spend_against_budget.replace(',',''))/parseFloat(d.costs14.staff_maximum_budget_available.replace(',','')))*100);
-            staffchange = parseInt(parseFloat(d.costs14.staff_spend_against_budget.replace(',',''))/parseFloat(d.costs13.staff_spend_against_budget.replace(',',''))*100)-100;
+            staffbudget = parseInt((parseFloat(d.costsThisYear.staff_spend_against_budget.replace(',',''))/parseFloat(d.costsThisYear.staff_maximum_budget_available.replace(',','')))*100);
+            staffchange = parseInt(parseFloat(d.costsThisYear.staff_spend_against_budget.replace(',',''))/parseFloat(d.costLastYear.staff_spend_against_budget.replace(',',''))*100)-100;
 
             if(staffchange >0) {
                 staffarrow = "<span class='glyphicon glyphicon-arrow-up red' aria-hidden='true'></span>"
@@ -654,8 +682,8 @@ function clicked(d) {
                  staffarrow = "<span class='glyphicon glyphicon-arrow-down green' aria-hidden='true'></span>" 
              } else { staffarrow = ""; }        
 
-            accombudget = parseInt((parseFloat(d.costs14.accom_spend_against_budget.replace(',',''))/parseFloat(d.costs14.accom_maximum_budget_available.replace(',','')))*100);
-            accomchange = parseInt(parseFloat(d.costs14.accom_spend_against_budget.replace(',',''))/parseFloat(d.costs13.accom_spend_against_budget.replace(',',''))*100)-100;
+            accombudget = parseInt((parseFloat(d.costsThisYear.accom_spend_against_budget.replace(',',''))/parseFloat(d.costsThisYear.accom_maximum_budget_available.replace(',','')))*100);
+            accomchange = parseInt(parseFloat(d.costsThisYear.accom_spend_against_budget.replace(',',''))/parseFloat(d.costLastYear.accom_spend_against_budget.replace(',',''))*100)-100;
 
             if(accomchange >0) {
                 accomarrow = "<span class='glyphicon glyphicon-arrow-up red' aria-hidden='true'></span>"
@@ -664,7 +692,7 @@ function clicked(d) {
              } else { accomarrow = ""; }
 
 
-            tschange = parseInt(parseFloat(d.costs14.ts_spend_against_budget.replace(',',''))/parseFloat(d.costs13.ts_spend_against_budget.replace(',',''))*100)-100;
+            tschange = parseInt(parseFloat(d.costsThisYear.ts_spend_against_budget.replace(',',''))/parseFloat(d.costLastYear.ts_spend_against_budget.replace(',',''))*100)-100;
 
             if(tschange >0) {
                 tsarrow = "<span class='glyphicon glyphicon-arrow-up red' aria-hidden='true'></span>"
@@ -672,8 +700,8 @@ function clicked(d) {
                  tsarrow = "<span class='glyphicon glyphicon-arrow-down green' aria-hidden='true'></span>" 
              } else { tsarrow = ""; }
 
-            overallbudget = parseInt((parseFloat(d.costs14.overall_total_spend.replace(',',''))/parseFloat(d.costs14.overall_total_spend.replace(',','')))*100);
-            overallchange = parseInt(parseFloat(d.costs14.overall_total_spend.replace(',',''))/parseFloat(d.costs13.overall_total_spend.replace(',',''))*100)-100;
+            overallbudget = parseInt((parseFloat(d.costsThisYear.overall_total_spend.replace(',',''))/parseFloat(d.costsThisYear.overall_total_spend.replace(',','')))*100);
+            overallchange = parseInt(parseFloat(d.costsThisYear.overall_total_spend.replace(',',''))/parseFloat(d.costLastYear.overall_total_spend.replace(',',''))*100)-100;
 
             if(overallchange >0) {
                 overallarrow = "<span class='glyphicon glyphicon-arrow-up red' aria-hidden='true'></span>"
@@ -683,13 +711,11 @@ function clicked(d) {
 
 
             var table_body = "<thead><th>Type of Expense</th><th>Amount</th><th>% budget used</th><th>% change last year</th><th>Local Ranking</th></thead>"
-            table_body += "<tbody><tr><td>Office</td><td id='officespend'>£"+d.costs14.office_costs_spend_against_budget+"</td><td>"+officebudget+"%</td><td>"+officechange+"%"+officearrow+"</td><td id='officerank'>Loading...</td></tr>";
-            table_body += "<tr><td>Staff</td><td id='staffspend'>£"+d.costs14.staff_spend_against_budget+"</td><td>"+staffbudget+"%</td><td>"+staffchange+"%"+staffarrow+"</td><td id='staffrank'>Loading...</td></tr>";
-            table_body += "<tr><td>Accommodation</td><td id='accomspend'>£"+d.costs14.accom_spend_against_budget+"</td><td>"+accombudget+"%</td><td>"+accomchange+"%"+accomarrow+"</td><td id='accomrank'>Loading...</td></tr>";
-            table_body += "<tr><td>Travel & Subsistence</td><td id='tsspend'>£"+d.costs14.ts_spend_against_budget+"</td><td>N/A</td><td>"+tschange+"%"+tsarrow+"</td><td id='tsrank'>Loading...</td></tr>";
-            table_body += "<tr><td><strong>Overall</strong></td><td id='overallspend'>£"+d.costs14.overall_total_spend+"</td><td>"+overallbudget+"%</td><td>"+overallchange+"%"+overallarrow+"</td><td id='overallrank'>Loading...</td></tr></tbody>";
-
-
+            table_body += "<tbody><tr><td>Office</td><td id='officespend'>£"+d.costsThisYear.office_costs_spend_against_budget+"</td><td>"+officebudget+"%</td><td>"+officechange+"%"+officearrow+"</td><td id='officerank'>Loading...</td></tr>";
+            table_body += "<tr><td>Staff</td><td id='staffspend'>£"+d.costsThisYear.staff_spend_against_budget+"</td><td>"+staffbudget+"%</td><td>"+staffchange+"%"+staffarrow+"</td><td id='staffrank'>Loading...</td></tr>";
+            table_body += "<tr><td>Accommodation</td><td id='accomspend'>£"+d.costsThisYear.accom_spend_against_budget+"</td><td>"+accombudget+"%</td><td>"+accomchange+"%"+accomarrow+"</td><td id='accomrank'>Loading...</td></tr>";
+            table_body += "<tr><td>Travel & Subsistence</td><td id='tsspend'>£"+d.costsThisYear.ts_spend_against_budget+"</td><td>N/A</td><td>"+tschange+"%"+tsarrow+"</td><td id='tsrank'>Loading...</td></tr>";
+            table_body += "<tr><td><strong>Overall</strong></td><td id='overallspend'>£"+d.costsThisYear.overall_total_spend+"</td><td>"+overallbudget+"%</td><td>"+overallchange+"%"+overallarrow+"</td><td id='overallrank'>Loading...</td></tr></tbody>";
 
             $("#mptable").html(table_body);
         }
