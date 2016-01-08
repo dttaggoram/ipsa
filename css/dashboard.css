@@ -18,6 +18,36 @@ body {
 }
 
 /*
+LIGHTBOX
+*/
+#lightbox {
+  position: absolute;
+  top: 0;
+  margin: 50px;
+  background: #fff;
+  z-index: 1001;
+  display: none;
+}
+#lightbox-shadow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  filter: alpha(opacity=75);
+  -moz-opacity: 0.75;
+  -khtml-opacity: 0.75;
+  opacity: 0.75;
+  z-index: 1000;
+  display: none;
+}
+
+#lightbox-content {
+
+}
+
+/*
  * Top navigation
  * Hide default border to remove 1px line.
  */
