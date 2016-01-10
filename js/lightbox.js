@@ -48,9 +48,12 @@ function lightbox(ajaxContentMPName){
 			success:function(data){
 				// remove "Loading..." message and append AJAX content
 				$('#lightbox').empty();
-				mpdata = data.getElementsByTagName("Members")[0].childNodes[0].innerHTML;
-				$('#lightbox').append("<p>" + mpdata + "</p>");
-				console.log(mpdata);
+				mpdata.name = "Davi Geroge";
+				mpdata.party = "Cons";
+				//mpdata = data.getElementsByTagName("Members")[0].childNodes[0].innerHTML;
+				//mpoutput = "<h1>"+mpdata.name+"</h1>";
+				//$('#lightbox').append(mpoutput);
+				console.log(url)
 			},
 			error:function(){
 				alert('AJAX Failure!');

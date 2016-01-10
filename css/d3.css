@@ -1,3 +1,29 @@
+.arrow {
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  margin-top: -45px;
+  margin-left: -35px;
+  width: 70px;
+  height: 90px;
+}
+
+
+.arrow:hover polyline,
+.arrow:focus polyline {
+  stroke-width: 6;
+}
+
+.arrow:active polyline {
+  stroke-width: 6;
+  transition: all 100ms ease-in-out;
+}
+
+polyline {
+  transition: all 250ms ease-in-out;
+}
+
+
 #map {
     margin-left: -40px;
     margin-right: -40px;

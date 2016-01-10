@@ -57,6 +57,8 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-3 col-md-2 sidebar">
+                <h2>Instructions</h2>
+                <p>To find details on a MP's expenses, zoom and click on a constituency on the map.  Alternatively use one of the filters below to help you search for an MP.</p>
                 <h2>Filters</h2>
                 <br />
                 <span class="label label-default">Year Finder</span>
@@ -130,7 +132,7 @@
                   </span>
                 </div><!-- /input-group -->
                 <div id="footerlicense">
-                    <!--<p>Design: David Tagg-Oram &copy;</p> -->
+                    <p>Design: David Tagg-Oram &copy;</p>
                 </div>
             </div>
             <div id="mainsection" class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
@@ -237,7 +239,7 @@ var zoom = d3.behavior.zoom()
     .scaleExtent([1, 15])
     .translate([0,0])
     .scale(1)
-    .on("zoom", clicked);
+    //.on("zoom", clicked);
 
 
 var path = d3.geo.path()
@@ -255,17 +257,11 @@ var svg = d3.select('#map').append('svg')
     .attr('height', height)
 ;
 
-svg.append("g")
-  .attr("class", "legendOrdinal")
-  .attr("transform", "translate(20,20)");
-
 var legendOrdinal = d3.legend.color()
   .shape("path", d3.svg.symbol().type("square").size(150)())
   .shapePadding(10)
   .scale(ordinal);
 
-svg.select(".legendOrdinal")
-  .call(legendOrdinal);
 
 svg.append("rect")
     .attr("class", "background")
@@ -401,7 +397,7 @@ function ready(error, constituencydata, topology, electionData,ipsaDataThisYear,
             tooltip.classed('hidden', true)
         })
         // zoom to click
-        .call(zoom);
+        .on("click",clicked);
 
     //click on dropdowns function
     $('.dropdown-menu a').on('click', function(){
@@ -509,6 +505,63 @@ function ready(error, constituencydata, topology, electionData,ipsaDataThisYear,
         }
     })
 
+    svg.append("g")
+      .attr("class", "legendOrdinal")
+      .attr("transform", "translate(20,20)")
+      .append("rect")
+      .style("fill","white")
+      .attr("width","140")
+      .attr("height","290")
+      .attr("transform", "translate(-20,-20)");
+
+    svg.select(".legendOrdinal")
+        .call(legendOrdinal);
+
+    svg.append("g")
+    .attr("class","arrow")
+    .attr("transform", "translate(850,120)")
+    .append("polyline")
+    .style("fill","none")
+    .style("stroke","black")
+    .style("stroke-width","3")
+    .style("stroke-linecap","round")
+    .style("stroke-linejoin","round")
+    .attr("points", "0.375,0.375 45.63,38.087 0.375,75.8");
+
+    svg.append("g")
+    .attr("class","arrow")
+    .attr("transform", "translate(750,120)")
+    .append("polyline")
+    .style("fill","none")
+    .style("stroke","black")
+    .style("stroke-width","3")
+    .style("stroke-linecap","round")
+    .style("stroke-linejoin","round")
+    .attr("points", "45.63,75.8 0.375,38.087 45.63,0.375");
+
+svg.append("g")
+    .attr("class","arrow")
+    .attr("transform", "translate(800,70)")
+    .append("polyline")
+    .style("fill","none")
+    .style("stroke","black")
+    .style("stroke-width","3")
+    .style("stroke-linecap","round")
+    .style("stroke-linejoin","round")
+    .attr("transform","rotate(90)")
+    .attr("points", "45.63,75.8 0.375,38.087 45.63,0.375");
+
+svg.append("g")
+    .attr("class","arrow")
+    .attr("transform", "translate(800,70)")
+    .append("polyline")
+    .style("fill","none")
+    .style("stroke","black")
+    .style("stroke-width","3")
+    .style("stroke-linecap","round")
+    .style("stroke-linejoin","round")
+    .attr("transform","rotate(270)")
+    .attr("points", "45.63,75.8 0.375,38.087 45.63,0.375");
 
     //Postcode finder
     $("#postcode").keyup(function(event){
@@ -613,11 +666,11 @@ function NumStr(n) {
 
 // click to zoom
 function clicked(d) { 
-    
+  
     var x, y, k, b, bx, by;
 
     $('body').one("click", function(event) {
-        
+
         if (d && centered !== d) {
             var nearbyconstituencies = [];
             $.ajax({
