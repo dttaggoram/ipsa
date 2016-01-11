@@ -273,7 +273,8 @@ svg.append("rect")
     .attr("width", width)
     .attr("height", height);
 
-var g = svg.append("g");
+var g = svg.append("g")
+        .attr("transform","translate(0,0)");
 
 
 // tooltip
@@ -442,6 +443,7 @@ function ready(error, constituencydata, topology, electionData,ipsaDataThisYear,
             var centroid = path.centroid(regionpath);
             x = centroid[0];
             y = centroid[1];
+            console.log(x,y)
 
             if (k>1) {
                 zoom.translate([((width/2)+(-x*k)),((height/2)+(-y*k))]);
@@ -888,21 +890,22 @@ function arrows(d) {
     }
     else if(d[0] == 1 && d[1] == 1) {
         z = zoom.scale()+1;
-        zoom.scale(z);
+        if(z>15) z=15;
+        x = (zoom.translate()[0]-(width/2))/zoom.scale()
+        y = (zoom.translate()[1]-(height/2))/zoom.scale()
 
-        center = [(width/2) - (width/2)*(z),(height/2) - (height/2)*(z)]
-        console.log(zoom.translate()[0]-center[0]-width/2)
-        x = center[0] + (zoom.translate()[0]-center[0]-(width/2))
-        y = center[1] + (zoom.translate()[1]-center[1]-(height/2))
+        x = (width/2) + (x*z)
+        y = (height/2) + (y*z)
+        zoom.scale(z);
     }
     else if(d[0] == -1 && d[1] == -1) {
         z = zoom.scale()-1;
+        x = (zoom.translate()[0]-(width/2))/zoom.scale()
+        y = (zoom.translate()[1]-(height/2))/zoom.scale()
+
+        x = (width/2) + (x*z)
+        y = (height/2) + (y*z)
         zoom.scale(z);
-
-        center = [(width/2) - (width/2)*(z),(height/2) - (height/2)*(z)]
-
-        x = center[0] - (zoom.translate()[0]-center[0]-(width/2))
-        y = center[1] - (zoom.translate()[1]-center[1]-(height/2))
     }
     else {
         z = zoom.scale()
@@ -910,9 +913,8 @@ function arrows(d) {
         y = zoom.translate()[1] + (d[1]*z);
     }   
     zoom.translate([x,y]);
-//console.log(x+"|"+y+"|"+zoom.scale())
     g.transition()
-    .duration(1000)
+    .duration(300)
     .attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")"); 
 }
 
