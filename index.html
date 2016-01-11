@@ -132,7 +132,7 @@
                   </span>
                 </div><!-- /input-group -->
                 <div id="footerlicense">
-                    <p>Design: David Tagg-Oram &copy;</p>
+                    <!-- <p>Design: David Tagg-Oram &copy;</p> -->
                 </div>
             </div>
             <div id="mainsection" class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
@@ -172,6 +172,7 @@
     <script src="js/topojson.v1.min.js"></script>
     <script src="js/d3.legend.min.js"></script>
     <script src="js/lightbox.js"></script>
+    <script src="js/lightboxlinechart.js"></script>
 
     <script>
 
@@ -245,8 +246,12 @@ var zoom = d3.behavior.zoom()
 var path = d3.geo.path()
     .projection(projection);
 
+var reset = d3.svg.symbol()
+    .type('circle');
 
-
+var zoomin = d3.svg.symbol()
+    .type('cross').
+    size('150');
 
 var ordinal = d3.scale.ordinal()
   .domain(["Conservatives", "Labour", "SNP", "Liberal Democrats", "DUP", "Sinn Fein", "Plaid Cymru", "SDLP", "Alliance Party", "UKIP", "Green", "Ind./Speaker"])
@@ -517,51 +522,99 @@ function ready(error, constituencydata, topology, electionData,ipsaDataThisYear,
     svg.select(".legendOrdinal")
         .call(legendOrdinal);
 
+
+    //Arrows
+    directions = [[-50,0],[0,-50],[50,0],[0,50]]
+        svg.selectAll('.arrows')        
+        .data(directions)
+        .enter()
+        .append("g")
+        .attr("class","arrow")
+        .attr("transform", function(d,i) { return "translate(" + (width-40) + ",50)rotate(" + i*90 + ")"})
+        .append("polygon")
+        .style("fill","none")
+        .style("stroke","black")
+        .style("fill","black")
+        .style("stroke-width","2")
+        .style("stroke-linecap","round")
+        .style("stroke-linejoin","round")
+        .attr("points", "18,-12 30,0 18,12")
+        .on("mouseover",function() {
+            d3.select(this)
+            .transition(100)
+            .style("stroke-width","4")
+        })
+        .on("mouseout",function() {
+            d3.select(this)
+            .transition(100)
+            .style("stroke-width","2")
+        })
+        .on("click",function(d) { return arrows(d)});
+
+
+    //Reset circle
+    svg.append("path")
+    .attr('d',reset)
+    .attr("transform", function() { return "translate(" + (width-40) + ",50)scale(1)"})
+    .attr('fill',"black")
+    .attr('stroke','#000')
+    .attr('stroke-width',1)
+    .on("mouseover",function() {
+            d3.select(this)
+            .transition(100)
+            .style("stroke-width","4")
+        })
+    .on("mouseout",function() {
+            d3.select(this)
+            .transition(100)
+            .style("stroke-width","2")
+        })
+    .on("click",function(d) { return arrows([0,0])});
+
+    //Zoom in +
+    svg.append("path")
+    .attr('d',zoomin)
+    .attr("transform", function() { return "translate(" + (width-40) + ",100)scale(1)"})
+    .attr('fill',"black")
+    .attr('stroke','#000')
+    .attr('stroke-width',"2")
+    .on("mouseover",function() {
+            d3.select(this)
+            .transition(100)
+            .style("stroke-width","4")
+        })
+    .on("mouseout",function() {
+            d3.select(this)
+            .transition(100)
+            .style("stroke-width","2")
+        })
+    .on("click",function(d) { return arrows([1,1])});
+
+
+    //Zoom out -
     svg.append("g")
-    .attr("class","arrow")
-    .attr("transform", "translate(850,120)")
-    .append("polyline")
-    .style("fill","none")
-    .style("stroke","black")
-    .style("stroke-width","3")
-    .style("stroke-linecap","round")
-    .style("stroke-linejoin","round")
-    .attr("points", "0.375,0.375 45.63,38.087 0.375,75.8");
+    .attr("transform", function(d,i) { return "translate(" + (width-40) + ",120)"})
+        .append("polyline")
+        .style("fill","none")
+        .style("stroke","black")
+        .style("fill","black")
+        .style("stroke-width","4")
+        .style("stroke-linecap","round")
+        .style("stroke-linejoin","round")
+        .attr("points", "-10,0 10,0")
+        .on("mouseover",function() {
+            d3.select(this)
+            .transition(100)
+            .style("stroke-width","6")
+        })
+        .on("mouseout",function() {
+            d3.select(this)
+            .transition(100)
+            .style("stroke-width","4")
+        })
+        .on("click",function(d) { return arrows([-1,-1])});
 
-    svg.append("g")
-    .attr("class","arrow")
-    .attr("transform", "translate(750,120)")
-    .append("polyline")
-    .style("fill","none")
-    .style("stroke","black")
-    .style("stroke-width","3")
-    .style("stroke-linecap","round")
-    .style("stroke-linejoin","round")
-    .attr("points", "45.63,75.8 0.375,38.087 45.63,0.375");
 
-svg.append("g")
-    .attr("class","arrow")
-    .attr("transform", "translate(800,70)")
-    .append("polyline")
-    .style("fill","none")
-    .style("stroke","black")
-    .style("stroke-width","3")
-    .style("stroke-linecap","round")
-    .style("stroke-linejoin","round")
-    .attr("transform","rotate(90)")
-    .attr("points", "45.63,75.8 0.375,38.087 45.63,0.375");
-
-svg.append("g")
-    .attr("class","arrow")
-    .attr("transform", "translate(800,70)")
-    .append("polyline")
-    .style("fill","none")
-    .style("stroke","black")
-    .style("stroke-width","3")
-    .style("stroke-linecap","round")
-    .style("stroke-linejoin","round")
-    .attr("transform","rotate(270)")
-    .attr("points", "45.63,75.8 0.375,38.087 45.63,0.375");
 
     //Postcode finder
     $("#postcode").keyup(function(event){
@@ -569,7 +622,6 @@ svg.append("g")
             $("#postcodesubmit").click();
         }
     });
-
     $( "#postcodesubmit" ).click(function() {
         $("#mporconst").val("");
         $.ajax({
@@ -784,8 +836,7 @@ function clicked(d) {
             table_body += "<tr><td><strong>Overall</strong></td><td id='overallspend'>£"+d.costsThisYear.overall_total_spend+"</td><td>"+overallbudget+"%</td><td>"+overallchange+"%"+overallarrow+"</td><td id='overallrank'>Loading...</td></tr></tbody>";
 
             $("#mptable").html(table_body);
-            //$("#moreinfo").attr("href","javascript:lightbox('" + d.mp + "');");
-            $("#moreinfo").attr("href","javascript:lightbox('David,Cameron');");
+            $("#moreinfo").attr("href","javascript:lightbox('" + d.mp + "');");
 
         }
         else {
@@ -811,7 +862,6 @@ function clicked(d) {
             $("#details").hide();
             $("#details").width(0);
         }
-
         g.selectAll("path")
         .classed("active", centered && function(d) { return d === centered; });
         g.transition()
@@ -829,6 +879,42 @@ function clicked(d) {
 
 }
 
+function arrows(d) {
+
+    if(d[0] == 0 && d[1] == 0) {
+        x = 0;
+        y = 0;
+        zoom.scale(0);
+    }
+    else if(d[0] == 1 && d[1] == 1) {
+        z = zoom.scale()+1;
+        zoom.scale(z);
+
+        center = [(width/2) - (width/2)*(z),(height/2) - (height/2)*(z)]
+        console.log(zoom.translate()[0]-center[0]-width/2)
+        x = center[0] + (zoom.translate()[0]-center[0]-(width/2))
+        y = center[1] + (zoom.translate()[1]-center[1]-(height/2))
+    }
+    else if(d[0] == -1 && d[1] == -1) {
+        z = zoom.scale()-1;
+        zoom.scale(z);
+
+        center = [(width/2) - (width/2)*(z),(height/2) - (height/2)*(z)]
+
+        x = center[0] - (zoom.translate()[0]-center[0]-(width/2))
+        y = center[1] - (zoom.translate()[1]-center[1]-(height/2))
+    }
+    else {
+        z = zoom.scale()
+        x = zoom.translate()[0] + (d[0]*z);
+        y = zoom.translate()[1] + (d[1]*z);
+    }   
+    zoom.translate([x,y]);
+//console.log(x+"|"+y+"|"+zoom.scale())
+    g.transition()
+    .duration(1000)
+    .attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")"); 
+}
 
 
 /*function zoomed() {
@@ -838,8 +924,6 @@ function clicked(d) {
     console.log("zoomscale" + zoom.scale())
     console.log("zoomtranslate" + zoom.translate())
 }*/
-
-
 
 
     </script>

@@ -43,7 +43,9 @@ LIGHTBOX
   display: none;
 }
 
-#lightbox-content {
+#lightboxcontent {
+  position: relative;
+  padding: 30px;
 
 }
 
