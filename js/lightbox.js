@@ -41,22 +41,22 @@ function lightbox(ajaxContentMPName){
 		// temporarily add a "Loading..." message in the lightbox
 		$('#lightbox').append('<p class="loading">Loading...</p>');
 
-		//url = ajaxContentMPName.split(",");
+		url = ajaxContentMPName.split(" ");
 		// request AJAX content
 		$.ajax({
 			type: 'GET',
-			url: "http://data.parliament.uk/membersdataplatform/services/mnis/members/query/name*" + ajaxContentMPName + "%7CMembership=all/Interests%7CGovernmentPosts%7COppositionPosts/",
-//			url: "http://data.parliament.uk/membersdataplatform/services/mnis/members/query/surname*" + url[1] + "%7Cforename*" + url[0] + "/BiographyEntries%7CCommittees%7CExperiences%7CGovernmentPosts%7CInterests%7COppositionPosts%7CParliamentaryPosts/",
+			url: "http://data.parliament.uk/membersdataplatform/services/mnis/members/query/surname*" + url[1] + "%7Cforename*" + url[0] + "%7CMembership=all/Interests%7CGovernmentPosts%7COppositionPosts/",
 			success:function(data){
 				// remove "Loading..." message and append AJAX content
 				$('#lightbox').empty();
-				//console.log("http://data.parliament.uk/membersdataplatform/services/mnis/members/query/name*" + ajaxContentMPName + "&7CMembership=all/Interests%7CGovernmentPosts%7COppositionPosts/")
+				console.log("http://data.parliament.uk/membersdataplatform/services/mnis/members/query/surname*" + url[1] + "%7Cforename*" + url[0] + "Membership=all/Interests%7CGovernmentPosts%7COppositionPosts/")
 				mpdata = data.getElementsByTagName("Members")[0].childNodes[0];
+				console.log(data);
 				mpdatafullname = mpdata.getElementsByTagName("FullTitle")[0].childNodes[0].nodeValue;
-				//mpdataministername = mpdata.getElementsByTagName("LayingMinisterName")[0].childNodes[0].nodeValue;
 				mpdataparty = mpdata.getElementsByTagName("Party")[0].childNodes[0].nodeValue;
 				mpdataconstituency = mpdata.getElementsByTagName("MemberFrom")[0].childNodes[0].nodeValue;
 				mpdatampsince = mpdata.getElementsByTagName("HouseStartDate")[0].childNodes[0].nodeValue;
+				//mpdatampuntil = mpdata.getElementsByTagName("HouseEndDate")[0].childNodes[0].nodeValue;
 				mpdatampinterests = mpdata.getElementsByTagName("Interests")[0].getElementsByTagName("Category");
 				mpdatampGovernmentPosts = mpdata.getElementsByTagName("GovernmentPosts")[0].getElementsByTagName("GovernmentPost");
 				mpdatampOppositionPosts = mpdata.getElementsByTagName("OppositionPosts")[0].getElementsByTagName("OppositionPost");
@@ -92,31 +92,46 @@ function lightbox(ajaxContentMPName){
 
 
 				var interests = "<h3>Registered Financial Interests</h3><ul>";
-				for (i=0; i<mpdatampinterests.length; i++) {
-					interests += "<li>Category:" + mpdatampinterests[i].getAttribute("Name")+"<ul>";
-					for (j=0; j<mpdatampinterests[i].childNodes.length; j++) {
-						interests += "<li>" + mpdatampinterests[i].childNodes[j].getElementsByTagName("RegisteredInterest")[0].childNodes[0].nodeValue + "</li>";
+				if (mpdatampinterests.length > 0) {
+					for (i=0; i<mpdatampinterests.length; i++) {
+						interests += "<li>Category:" + mpdatampinterests[i].getAttribute("Name")+"<ul>";
+						for (j=0; j<mpdatampinterests[i].childNodes.length; j++) {
+							interests += "<li>" + mpdatampinterests[i].childNodes[j].getElementsByTagName("RegisteredInterest")[0].childNodes[0].nodeValue + "</li>";
+						}
+						interests += "</ul></li>";
 					}
-					interests += "</ul></li>";
+					interests += "</ul>";
+				} 
+				else {
+					interests += "<p>No registered financial interests for these dates."
 				}
-				interests += "</ul>";
 
 
+				var monthNames = [
+				  "January", "February", "March",
+				  "April", "May", "June", "July",
+				  "August", "September", "October",
+				  "November", "December"
+				];
+
+				since = new Date(mpdatampsince);
+				//until = new Date()
 
 				mpoutput = "<div id='lightboxcontent'>";
 				mpoutput += "<div style='position:absolute; top:10px; right:10px'><a id='closebutton' href='#' onclick='closeLightbox()'>Close</a></div>";
 				mpoutput += "<h1>"+mpdatafullname+"</h1>";
-				//mpoutput += "<h2>"+mpdataministername+"</h2>";
-				mpoutput += "<h4>Party: "+mpdataparty+" | Constituency: " + mpdataconstituency + " | MP since:" + mpdatampsince + "</h4>";
+				mpoutput += "<h4>Party: "+mpdataparty+" | Constituency: " + $("#constituency").html() + " | MP since:" + since.getDate() + " " + monthNames[since.getMonth()] + " " + since.getFullYear();
+				//if (until) mpoutput += "until " + until.getDate() + " " + monthNames[until.getMonth()] + " " + until.getFullYear();
+				mpoutput += "</h4>";
 				mpoutput += posts;
 				mpoutput += "<h3>Expenses Details</h3><table id='lightboxexpenses' class='table table-striped'></table>";
 				mpoutput += "<div id='lightbox-line-chart'></div>";
 				mpoutput += interests;
 				mpoutput += "</div>";
 				$('#lightbox').append(mpoutput);
-				$('body').append(theShadow);
 				$("#lightboxexpenses").html($("#mptable").html());
 				lightboxlinechart();
+				$('#lightbox-shadow').height($('#lightbox').height() + 100);
 
 			},
 			error:function(){
@@ -131,9 +146,12 @@ function lightbox(ajaxContentMPName){
 	$('#lightbox').css('top', $(window).scrollTop() + 50 + 'px');
 	$('#lightbox').width( window.innerWidth - 100 + 'px');
 
+
+
 	// display the lightbox
 	$('#lightbox').show();
 	$('#lightbox-shadow').show();
+
 
 }
 

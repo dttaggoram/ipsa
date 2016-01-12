@@ -44,7 +44,7 @@
   pointer-events: all;
 }
 
-/* party full colors 
+/* party full colors */
 .conservatives { fill:rgba(5, 117, 201, 1); }
 .labour { fill:rgba(237, 30, 14, 1); }
 .snp { fill:rgba(235, 195, 28, 1); }
@@ -57,7 +57,7 @@
 .democratic-unionist-party { fill: rgba(212, 106, 76, 1); }
 .alliance-party { fill: rgba(255, 215, 0, 1); }
 .social-democratic---labour-party { fill: rgba(0, 158, 96, 1); }
-*/
+
 /* tooltip */
 .hidden {
     display: none;

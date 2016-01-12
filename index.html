@@ -45,7 +45,11 @@
           </button>
           <span class="label label-alpha">ALPHA</span>
           <a class="navbar-brand" href="#">IPSA - MPs' Expenses</a>
+
         </div>
+
+        <h4 class="navbar-text white center"><span class="label label-default">Dates selected: 1 April 2014 - 31 March 2015</span></h4>
+
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
             <li><a href="#">Help</a></li>
@@ -120,7 +124,7 @@
                 <span class="label label-default">Ministers Finder</span>
                 <div class="input-group" >
                   <div id="ministers" class="input-group-btn">
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Ministers <span class="caret"></span></button>
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">All Members <span class="caret"></span></button>
                     <ul class="dropdown-menu dropdown-menu-left">
                         <li><a id="ministersnone" href="#">All Members</a></li>
                         <li><a id="heldcabinetpostbetween=" href="#">Cabinet Ministers</a></li>
@@ -781,7 +785,7 @@ function clicked(d) {
             $("#details").width(width-40);
             $("#details").show();
             $("#mpname").html(d.mp);
-            $("#constituency").html(d.constituencyName);
+            $("#constituency").html(d.constituency_name);
             $("#party").html(d.partyName + " / Votes: " + d.shareVotes + "%");
 
             officebudget = parseInt((parseFloat(d.costsThisYear.office_costs_spend_against_budget.replace(',',''))/parseFloat(d.costsThisYear.office_costs_maximum_budget_available.replace(',','')))*100);
@@ -820,14 +824,19 @@ function clicked(d) {
                  tsarrow = "<span class='glyphicon glyphicon-arrow-down green' aria-hidden='true'></span>" 
              } else { tsarrow = ""; }
 
-            overallbudget = parseInt((parseFloat(d.costsThisYear.overall_total_spend.replace(',',''))/parseFloat(d.costsThisYear.overall_total_spend.replace(',','')))*100);
+            //overallbudget = parseInt((parseFloat(d.costsThisYear.overall_total_spend.replace(',',''))/parseFloat(d.costsThisYear.overall_total_spend.replace(',','')))*100);
             overallchange = parseInt(parseFloat(d.costsThisYear.overall_total_spend.replace(',',''))/parseFloat(d.costLastYear.overall_total_spend.replace(',',''))*100)-100;
 
             if(overallchange >0) {
                 overallarrow = "<span class='glyphicon glyphicon-arrow-up red' aria-hidden='true'></span>"
             } else if (overallchange <0){
                  overallarrow = "<span class='glyphicon glyphicon-arrow-down green' aria-hidden='true'></span>" 
-             } else { overallarrow = ""; }                
+             } else { overallarrow = ""; }
+
+
+            if(accomchange == "") {accomchange = "N/A"}
+            //if(typeof accomchange == "number") 
+
 
 
             var table_body = "<thead><th>Type of Expense</th><th>Amount</th><th>% budget used</th><th>% change last year</th><th>Local Ranking</th></thead>"
@@ -835,7 +844,7 @@ function clicked(d) {
             table_body += "<tr><td>Staff</td><td id='staffspend'>£"+d.costsThisYear.staff_spend_against_budget+"</td><td>"+staffbudget+"%</td><td>"+staffchange+"%"+staffarrow+"</td><td id='staffrank'>Loading...</td></tr>";
             table_body += "<tr><td>Accommodation</td><td id='accomspend'>£"+d.costsThisYear.accom_spend_against_budget+"</td><td>"+accombudget+"%</td><td>"+accomchange+"%"+accomarrow+"</td><td id='accomrank'>Loading...</td></tr>";
             table_body += "<tr><td>Travel & Subsistence</td><td id='tsspend'>£"+d.costsThisYear.ts_spend_against_budget+"</td><td>N/A</td><td>"+tschange+"%"+tsarrow+"</td><td id='tsrank'>Loading...</td></tr>";
-            table_body += "<tr><td><strong>Overall</strong></td><td id='overallspend'>£"+d.costsThisYear.overall_total_spend+"</td><td>"+overallbudget+"%</td><td>"+overallchange+"%"+overallarrow+"</td><td id='overallrank'>Loading...</td></tr></tbody>";
+            table_body += "<tr><td><strong>Overall</strong></td><td id='overallspend'>£"+d.costsThisYear.overall_total_spend+"</td><td>N/A</td><td>"+overallchange+"%"+overallarrow+"</td><td id='overallrank'>Loading...</td></tr></tbody>";
 
             $("#mptable").html(table_body);
             $("#moreinfo").attr("href","javascript:lightbox('" + d.mp + "');");
