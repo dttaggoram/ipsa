@@ -220,7 +220,7 @@
         enddate = getFiscalY(date)-1+"-03-31";
     
 //Hide MP information bar
-$("#details").hide();    
+$("#details").hide();
 
 
 
@@ -293,15 +293,18 @@ queue()
     .defer(d3.tsv, "data/election-2010results.tsv")
     .defer(d3.csv, "data/export-2014.csv")
     .defer(d3.csv, "data/export-2013.csv")
+    .defer(d3.csv, "data/export-2012.csv")
     .await(ready) // ready refers to function below
 ;
 
-function ready(error, constituencydata, topology, electionData,ipsaDataThisYear,ipsaDataLastYear) {
+function ready(error, constituencydata, topology, electionData,ipsaData2014,ipsaData2013, ipsaData2012) {
 
     var constituencies = constituencydata;
     var topology = topojson.feature(topology, topology.objects.WholeUK).features;
     var n = constituencies.length;
     var mporconstdata = [];
+    var ipsaDataThisYear = ipsaData2014;
+    var ipsaDataLastYear = ipsaData2013;
 
     // join datasets
     // we will add the missing data points to the constituencies object
@@ -408,6 +411,7 @@ function ready(error, constituencydata, topology, electionData,ipsaDataThisYear,
         })
         // zoom to click
         .on("click",clicked);
+        //.on("wheel",zoomed);
 
     //click on dropdowns function
     $('.dropdown-menu a').on('click', function(){
@@ -447,7 +451,6 @@ function ready(error, constituencydata, topology, electionData,ipsaDataThisYear,
             var centroid = path.centroid(regionpath);
             x = centroid[0];
             y = centroid[1];
-            console.log(x,y)
 
             if (k>1) {
                 zoom.translate([((width/2)+(-x*k)),((height/2)+(-y*k))]);
@@ -479,7 +482,6 @@ function ready(error, constituencydata, topology, electionData,ipsaDataThisYear,
 
                 //http://bl.ocks.org/mbostock/ec585e034819c06f5c99 Tutorial on d3 XML
                 //http://data.parliament.uk/membersdataplatform/memberquery.aspx#dateinfotable Guide to API
-                console.log(xmlurl)
                 d3.xml(xmlurl, function(error, data) {
 
                     membersfeed = [].map.call(data.querySelector("Members").querySelectorAll("Member"), function(member) {
@@ -834,17 +836,23 @@ function clicked(d) {
              } else { overallarrow = ""; }
 
 
-            if(accomchange == "") {accomchange = "N/A"}
-            //if(typeof accomchange == "number") 
+            if(isNaN(accombudget)) {accombudget = "N/A"} else {accombudget = accombudget+"%"}
+            if(isNaN(accomchange)) {accomchange = "N/A"} else {accomchange = accomchange+"%"}
+            if(isNaN(officebudget)) {officebudget = "N/A"} else {officebudget = officebudget+"%"}
+            if(isNaN(officechange)) {officechange = "N/A"} else {officechange = officechange+"%"}
+            if(isNaN(staffbudget)) {staffbudget = "N/A"} else {staffbudget = staffbudget+"%"}
+            if(isNaN(staffchange)) {staffchange = "N/A"} else {staffchange = staffchange+"%"}
+            if(isNaN(tschange)) {tschange = "N/A"} else {tschange = tschange+"%"}
+            if(isNaN(overallchange)) {overallchange = "N/A"} else {overallchange = overallchange+"%"}
 
 
 
             var table_body = "<thead><th>Type of Expense</th><th>Amount</th><th>% budget used</th><th>% change last year</th><th>Local Ranking</th></thead>"
-            table_body += "<tbody><tr><td>Office</td><td id='officespend'>£"+d.costsThisYear.office_costs_spend_against_budget+"</td><td>"+officebudget+"%</td><td>"+officechange+"%"+officearrow+"</td><td id='officerank'>Loading...</td></tr>";
-            table_body += "<tr><td>Staff</td><td id='staffspend'>£"+d.costsThisYear.staff_spend_against_budget+"</td><td>"+staffbudget+"%</td><td>"+staffchange+"%"+staffarrow+"</td><td id='staffrank'>Loading...</td></tr>";
-            table_body += "<tr><td>Accommodation</td><td id='accomspend'>£"+d.costsThisYear.accom_spend_against_budget+"</td><td>"+accombudget+"%</td><td>"+accomchange+"%"+accomarrow+"</td><td id='accomrank'>Loading...</td></tr>";
-            table_body += "<tr><td>Travel & Subsistence</td><td id='tsspend'>£"+d.costsThisYear.ts_spend_against_budget+"</td><td>N/A</td><td>"+tschange+"%"+tsarrow+"</td><td id='tsrank'>Loading...</td></tr>";
-            table_body += "<tr><td><strong>Overall</strong></td><td id='overallspend'>£"+d.costsThisYear.overall_total_spend+"</td><td>N/A</td><td>"+overallchange+"%"+overallarrow+"</td><td id='overallrank'>Loading...</td></tr></tbody>";
+            table_body += "<tbody><tr><td>Office</td><td id='officespend'>£"+d.costsThisYear.office_costs_spend_against_budget+"</td><td>"+officebudget+"</td><td>"+officechange+officearrow+"</td><td id='officerank'>Loading...</td></tr>";
+            table_body += "<tr><td>Staff</td><td id='staffspend'>£"+d.costsThisYear.staff_spend_against_budget+"</td><td>"+staffbudget+"</td><td>"+staffchange+staffarrow+"</td><td id='staffrank'>Loading...</td></tr>";
+            table_body += "<tr><td>Accommodation</td><td id='accomspend'>£"+d.costsThisYear.accom_spend_against_budget+"</td><td>"+accombudget+"</td><td>"+accomchange+accomarrow+"</td><td id='accomrank'>Loading...</td></tr>";
+            table_body += "<tr><td>Travel & Subsistence</td><td id='tsspend'>£"+d.costsThisYear.ts_spend_against_budget+"</td><td>N/A</td><td>"+tschange+tsarrow+"</td><td id='tsrank'>Loading...</td></tr>";
+            table_body += "<tr><td><strong>Overall</strong></td><td id='overallspend'>£"+d.costsThisYear.overall_total_spend+"</td><td>N/A</td><td>"+overallchange+overallarrow+"</td><td id='overallrank'>Loading...</td></tr></tbody>";
 
             $("#mptable").html(table_body);
             $("#moreinfo").attr("href","javascript:lightbox('" + d.mp + "');");
@@ -880,14 +888,6 @@ function clicked(d) {
         .attr("transform", "translate(" + (zoom.translate()) + ")scale(" + (zoom.scale()) + ")");
 
     });
-
-    $('body').one("wheel", function() {
-        g.transition()
-        .duration(0)
-        .attr("transform", "translate(" + zoom.translate() + ")scale(" + (zoom.scale()) + ")");
-
-    });
-
 }
 
 function arrows(d) {
@@ -928,13 +928,11 @@ function arrows(d) {
 }
 
 
-/*function zoomed() {
+function zoomed() {
 
    g.transition().duration(0)
-    .attr("transform", "translate(" + (zoom.translate()) + ")scale(" + (zoom.scale()) + ")");
-    console.log("zoomscale" + zoom.scale())
-    console.log("zoomtranslate" + zoom.translate())
-}*/
+    .attr("transform", "translate(" + (d3.event.x,d3.event.y) + ")scale(" + (zoom.scale()) + ")");
+}
 
 
     </script>

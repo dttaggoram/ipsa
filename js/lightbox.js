@@ -45,58 +45,54 @@ function lightbox(ajaxContentMPName){
 		// request AJAX content
 		$.ajax({
 			type: 'GET',
-			url: "http://data.parliament.uk/membersdataplatform/services/mnis/members/query/surname*" + url[1] + "%7Cforename*" + url[0] + "%7CMembership=all/Interests%7CGovernmentPosts%7COppositionPosts/",
+			url: "http://data.parliament.uk/membersdataplatform/services/mnis/members/query/surname*" + url[1] + "%7Cforename*" + url[0] + "%7CMembership=all/Interests%7CConstituencies/",
 			success:function(data){
+
+				var monthNames = [
+				  "January", "February", "March",
+				  "April", "May", "June", "July",
+				  "August", "September", "October",
+				  "November", "December"
+				];
+
+
 				// remove "Loading..." message and append AJAX content
 				$('#lightbox').empty();
-				console.log("http://data.parliament.uk/membersdataplatform/services/mnis/members/query/surname*" + url[1] + "%7Cforename*" + url[0] + "Membership=all/Interests%7CGovernmentPosts%7COppositionPosts/")
+				
 				mpdata = data.getElementsByTagName("Members")[0].childNodes[0];
-				console.log(data);
 				mpdatafullname = mpdata.getElementsByTagName("FullTitle")[0].childNodes[0].nodeValue;
 				mpdataparty = mpdata.getElementsByTagName("Party")[0].childNodes[0].nodeValue;
 				mpdataconstituency = mpdata.getElementsByTagName("MemberFrom")[0].childNodes[0].nodeValue;
 				mpdatampsince = mpdata.getElementsByTagName("HouseStartDate")[0].childNodes[0].nodeValue;
-				//mpdatampuntil = mpdata.getElementsByTagName("HouseEndDate")[0].childNodes[0].nodeValue;
 				mpdatampinterests = mpdata.getElementsByTagName("Interests")[0].getElementsByTagName("Category");
-				mpdatampGovernmentPosts = mpdata.getElementsByTagName("GovernmentPosts")[0].getElementsByTagName("GovernmentPost");
-				mpdatampOppositionPosts = mpdata.getElementsByTagName("OppositionPosts")[0].getElementsByTagName("OppositionPost");
-
+				mpdatampConstituencyPosts = mpdata.getElementsByTagName("Constituencies")[0].getElementsByTagName("Constituency");
 				var posts = "";
-				for (i=0; i<mpdatampGovernmentPosts.length; i++) {
-
-					if (mpdatampGovernmentPosts[i].getElementsByTagName("EndDate")[0].childNodes[0] == undefined) {
+				for (i=0; i<mpdatampConstituencyPosts.length; i++) {
+					if (mpdatampConstituencyPosts[i].getElementsByTagName("EndDate")[0].childNodes[0] == undefined) {
 						enddate = "current";
 					}
 					else { 
-						enddate = mpdatampGovernmentPosts[i].getElementsByTagName("EndDate")[0].childNodes[0].nodeValue;
+						enddate = new Date(mpdatampConstituencyPosts[i].getElementsByTagName("EndDate")[0].childNodes[0].nodeValue);
+						enddate = enddate.getDate() + " " + monthNames[enddate.getMonth()] + " " + enddate.getFullYear();
 					}
 
-					posts += "<p>" + mpdatampGovernmentPosts[i].getElementsByTagName("Name")[0].childNodes[0].nodeValue;
-					posts += " from " + mpdatampGovernmentPosts[i].getElementsByTagName("StartDate")[0].childNodes[0].nodeValue;
+					startdate = new Date(mpdatampConstituencyPosts[i].getElementsByTagName("StartDate")[0].childNodes[0].nodeValue);
+
+
+
+					posts += "<p>" + mpdatampConstituencyPosts[i].getElementsByTagName("Name")[0].childNodes[0].nodeValue;
+					posts += " from " + startdate.getDate() + " " + monthNames[startdate.getMonth()] + " " + startdate.getFullYear();
 					posts += " to " + enddate + "</p>";
 				}
-
-				for (i=0; i<mpdatampOppositionPosts.length; i++) {
-
-					if (mpdatampOppositionPosts[i].getElementsByTagName("EndDate")[0].childNodes[0] == undefined) {
-						enddate = "current";
-					}
-					else { 
-						enddate = mpdatampOppositionPosts[i].getElementsByTagName("EndDate")[0].childNodes[0].nodeValue;
-					}
-
-					posts += "<p>" + mpdatampOppositionPosts[i].getElementsByTagName("Name")[0].childNodes[0].nodeValue;
-					posts += " from " + mpdatampOppositionPosts[i].getElementsByTagName("StartDate")[0].childNodes[0].nodeValue;
-					posts += " to " + enddate + "</p>";
-				}
-
 
 				var interests = "<h3>Registered Financial Interests</h3><ul>";
 				if (mpdatampinterests.length > 0) {
 					for (i=0; i<mpdatampinterests.length; i++) {
 						interests += "<li>Category:" + mpdatampinterests[i].getAttribute("Name")+"<ul>";
 						for (j=0; j<mpdatampinterests[i].childNodes.length; j++) {
-							interests += "<li>" + mpdatampinterests[i].childNodes[j].getElementsByTagName("RegisteredInterest")[0].childNodes[0].nodeValue + "</li>";
+							if(mpdatampinterests[i].childNodes[j]>0) {
+								interests += "<li>" + mpdatampinterests[i].childNodes[j].getElementsByTagName("RegisteredInterest")[0].childNodes[0].nodeValue + "</li>";
+							}
 						}
 						interests += "</ul></li>";
 					}
@@ -107,12 +103,7 @@ function lightbox(ajaxContentMPName){
 				}
 
 
-				var monthNames = [
-				  "January", "February", "March",
-				  "April", "May", "June", "July",
-				  "August", "September", "October",
-				  "November", "December"
-				];
+
 
 				since = new Date(mpdatampsince);
 				//until = new Date()
@@ -120,18 +111,23 @@ function lightbox(ajaxContentMPName){
 				mpoutput = "<div id='lightboxcontent'>";
 				mpoutput += "<div style='position:absolute; top:10px; right:10px'><a id='closebutton' href='#' onclick='closeLightbox()'>Close</a></div>";
 				mpoutput += "<h1>"+mpdatafullname+"</h1>";
-				mpoutput += "<h4>Party: "+mpdataparty+" | Constituency: " + $("#constituency").html() + " | MP since:" + since.getDate() + " " + monthNames[since.getMonth()] + " " + since.getFullYear();
-				//if (until) mpoutput += "until " + until.getDate() + " " + monthNames[until.getMonth()] + " " + until.getFullYear();
-				mpoutput += "</h4>";
+				mpoutput += "<h4>Party: "+mpdataparty+"</h4>";
 				mpoutput += posts;
-				mpoutput += "<h3>Expenses Details</h3><table id='lightboxexpenses' class='table table-striped'></table>";
+				mpoutput += "<h3>Expenses Change Over the Past 3 Years</h3>";
 				mpoutput += "<div id='lightbox-line-chart'></div>";
+				mpoutput += "<p><a href='#'>Download this data</a></p>";
 				mpoutput += interests;
 				mpoutput += "</div>";
 				$('#lightbox').append(mpoutput);
-				$("#lightboxexpenses").html($("#mptable").html());
-				lightboxlinechart();
-				$('#lightbox-shadow').height($('#lightbox').height() + 100);
+				lightboxlinechart(ajaxContentMPName);
+
+				if($('#lightbox').height()<window.innerHeight) {
+					shadowheight = window.innerHeight;
+				}
+				else {
+					shadowheight = $('#lightbox').height() + $('#navbar').height() + 50;
+				}
+				$('#lightbox-shadow').height(shadowheight);
 
 			},
 			error:function(){
@@ -151,6 +147,15 @@ function lightbox(ajaxContentMPName){
 	// display the lightbox
 	$('#lightbox').show();
 	$('#lightbox-shadow').show();
+	$('#lightbox-shadow').height($('#lightbox').height+1000);
+
+
+
+	$(document).keyup(function(e) { 
+        if (e.keyCode == 27) { // esc keycode
+			closeLightbox()
+        }
+    });
 
 
 }

@@ -58,6 +58,7 @@
 .alliance-party { fill: rgba(255, 215, 0, 1); }
 .social-democratic---labour-party { fill: rgba(0, 158, 96, 1); }
 
+
 /* tooltip */
 .hidden {
     display: none;
@@ -164,12 +165,21 @@ button { width: 100%; box-sizing: border-box; }
   shape-rendering: crispEdges;
 }
 
-.x.axis path {
+.x.axis.bottom path {
+  display: none;
+}
+
+.y.axis path {
   display: none;
 }
 
 .line {
   fill: none;
   stroke: steelblue;
-  stroke-width: 1.5px;
+  stroke-width: 3px;
+}
+
+.axis .minor line {
+  stroke: #777;
+  stroke-dasharray: 2,2;
 }
