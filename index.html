@@ -43,7 +43,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <span class="label label-alpha">ALPHA</span>
+          <span class="label label-alpha">DISCOVERY</span>
           <a class="navbar-brand" href="#">IPSA - MPs' Expenses</a>
 
         </div>
@@ -128,7 +128,7 @@
                     <ul class="dropdown-menu dropdown-menu-left">
                         <li><a id="ministersnone" href="#">All Members</a></li>
                         <li><a id="heldcabinetpostbetween=" href="#">Cabinet Ministers</a></li>
-                        <li><a id="heldshadowcabinetpostbetween" href="#">Shad. Cab. Ministers</a></li>
+                        <li><a id="heldshadowcabinetpostbetween=" href="#">Shad. Cab. Ministers</a></li>
                     </ul>
                   </div><!-- /btn-group -->
                   <span class="input-group-btn">
@@ -218,7 +218,6 @@
         date = new Date();
         startdate = getFiscalY(date)-2+"-04-01";
         enddate = getFiscalY(date)-1+"-03-31";
-    
 //Hide MP information bar
 $("#details").hide();
 
@@ -454,6 +453,7 @@ function ready(error, constituencydata, topology, electionData,ipsaData2014,ipsa
 
             if (k>1) {
                 zoom.translate([((width/2)+(-x*k)),((height/2)+(-y*k))]);
+                regiontranslate = [((width/2)+(-x*k)),((height/2)+(-y*k))];
             } else {
                 zoom.translate([0,0]);
             }
@@ -478,7 +478,7 @@ function ready(error, constituencydata, topology, electionData,ipsaData2014,ipsa
                 })   
             }
             else {
-                xmlurl = "http://data.parliament.uk/membersdataplatform/services/mnis/members/query/membership=all%7Ccommonsmemberbetween="+startdate+"and"+enddate+"%7C"+$(this).attr("id")+startdate+"and"+enddate+"/GovernmentPosts%7COppositionPosts%7CConstituencies/";
+                xmlurl = "http://data.parliament.uk/membersdataplatform/services/mnis/members/query/membership=all%7C"+$(this).attr("id")+startdate+"and"+enddate+"/GovernmentPosts%7COppositionPosts%7CConstituencies/";
 
                 //http://bl.ocks.org/mbostock/ec585e034819c06f5c99 Tutorial on d3 XML
                 //http://data.parliament.uk/membersdataplatform/memberquery.aspx#dateinfotable Guide to API
@@ -678,15 +678,15 @@ function NumStr(n) {
         for (a=0;a<ranks.length;a++) {
             for (b=0; b<constituencies.length; b++) {
                 if(ranks[a] == constituencies[b].id) {
-                    if(parseFloat(constituencies[b].costsThisYear.office_costs_spend_against_budget)<parseFloat($("#officespend").html().replace("£", ""))) {
+                    if(parseFloat(constituencies[b].costsThisYear.office_costs_spend_against_budget.replace(",", ""))<parseFloat($("#officespend").html().replace("£", "").replace(",", ""))) {
                     rankedOffice++}
-                    if(parseFloat(constituencies[b].costsThisYear.staff_spend_against_budget)<parseFloat($("#staffspend").html().replace("£", ""))) {
+                    if(parseFloat(constituencies[b].costsThisYear.staff_spend_against_budget.replace(",", ""))<parseFloat($("#staffspend").html().replace("£", "").replace(",", ""))) {
                     rankedStaff++}
-                    if(parseFloat(constituencies[b].costsThisYear.accom_spend_against_budget)<parseFloat($("#accomspend").html().replace("£", ""))) {
+                    if(parseFloat(constituencies[b].costsThisYear.accom_spend_against_budget.replace(",", ""))<parseFloat($("#accomspend").html().replace("£", "").replace(",", ""))) {
                     rankedAccom++}
-                    if(parseFloat(constituencies[b].costsThisYear.ts_spend_against_budget)<parseFloat($("#tsspend").html().replace("£", ""))) {
+                    if(parseFloat(constituencies[b].costsThisYear.ts_spend_against_budget.replace(",", ""))<parseFloat($("#tsspend").html().replace("£", "").replace(",", ""))) {
                     rankedTS++}
-                    if(parseFloat(constituencies[b].costsThisYear.overall_total_spend)<parseFloat($("#overallspend").html().replace("£", ""))) {
+                    if(parseFloat(constituencies[b].costsThisYear.overall_total_spend.replace(",", ""))<parseFloat($("#overallspend").html().replace("£", "").replace(",", ""))) {
                     rankedOverall++}
 
                 }
@@ -728,8 +728,6 @@ function NumStr(n) {
 function clicked(d) { 
   
     var x, y, k, b, bx, by;
-
-    $('body').one("click", function(event) {
 
         if (d && centered !== d) {
             var nearbyconstituencies = [];
@@ -859,7 +857,7 @@ function clicked(d) {
 
         }
         else {
-
+        	console.log("test")
             height = window.innerHeight-$("#navbar").height() - 20;
 
             svg
@@ -887,7 +885,6 @@ function clicked(d) {
         .duration(1250)
         .attr("transform", "translate(" + (zoom.translate()) + ")scale(" + (zoom.scale()) + ")");
 
-    });
 }
 
 function arrows(d) {

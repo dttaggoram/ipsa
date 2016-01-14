@@ -107,7 +107,7 @@ console.log(data);
     return {
       name: name,
       values: data.map(function(d) {
-        return {date: d.date, costs: +d[name], amounts: data};
+        return {date: d.date, costs: +d[name], amount: "£50,000"};
       })
     };
   });
@@ -171,7 +171,6 @@ console.log(d)
                 // tooltip text:
                 .html(
                     '<b>' + d.name + '</b><br />'
-                    //'<b>' + d.name + '</b>';
                 )
             
         })
