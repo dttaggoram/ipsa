@@ -107,7 +107,7 @@ console.log(data);
     return {
       name: name,
       values: data.map(function(d) {
-        return {date: d.date, costs: +d[name]};
+        return {date: d.date, costs: +d[name], amount: "£50,000"};
       })
     };
   });
@@ -164,16 +164,13 @@ console.log(data);
                 }
             )
             ;
-console.log(mouse)
+console.log(d)
             tooltip
                 .classed('hidden', false)
-                .attr('style', 'left:' + (mouse[0]) + 'px; top:' + 0 + 'px')
+                .attr('style', 'left:' + (mouse[0]-50) + 'px; top:' + (mouse[1]+300) + 'px')
                 // tooltip text:
                 .html(
-                    '<b>' + d.mp + '</b><br />'
-                    + '<b>' + d.constituency_name + '</b></br>' 
-                    + d.partyName + '</br>' 
-                    + d.shareVotes + '%'
+                    '<b>' + d.name + '</b><br />'
                 )
             
         })
